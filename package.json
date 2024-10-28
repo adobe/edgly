@@ -1,0 +1,56 @@
+{
+  "name": "@adobe/fastly-svc",
+  "version": "0.0.1",
+  "description": "CLI for working with Fastly services",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "fastly-svc": "src/index.js"
+  },
+  "scripts": {
+    "test": "c8 mocha",
+    "posttest": "biome check --reporter=summary || (echo \"Run 'npm lint' for lint error details. 'npm lint:fix' for automatic fixing.\" && false)",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "semantic-release": "semantic-release",
+    "semantic-release-dry": "semantic-release --dry-run --branches $CI_BRANCH"
+  },
+  "mocha": {
+    "recursive": "true",
+    "reporter": "mocha-multi-reporters",
+    "reporter-options": "configFile=.mocha-multi.json"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "helpUrl": "https://www.conventionalcommits.org"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@commitlint/cli": "19.5.0",
+    "@commitlint/config-conventional": "19.5.0",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/git": "10.0.1",
+    "c8": "10.1.2",
+    "lefthook": "1.8.1",
+    "mocha": "10.7.3",
+    "mocha-multi-reporters": "1.5.1",
+    "semantic-release": "24.2.0"
+  },
+  "keywords": [
+    "fastly",
+    "vcl",
+    "cli"
+  ],
+  "author": "Adobe",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adobe/fastly-svc"
+  },
+  "bugs": {
+    "url": "https://github.com/adobe/fastly-svc/issues"
+  },
+  "homepage": "https://github.com/adobe/fastly-svc#readme"
+}

@@ -1,0 +1,14 @@
+coverage
+.vscode/
+.nyc_output/
+node_modules/
+junit
+dist
+tmp
+logs
+.DS_Store
+test-results.xml
+.env*
+*.env
+!.env.template*
+newrelic_agent.log

@@ -3,6 +3,8 @@ pre-commit:
     lint:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: npx @biomejs/biome check --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+    license:
+      run: npm run license-check
 
 commit-msg:
   commands:

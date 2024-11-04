@@ -21,7 +21,8 @@ jobs:
         with:
           node-version: '18.x'
       - run: npm ci
-      - run: npm run lint
+      - run: npm run license-check
+      - run: npm run lint-ci
       - run: npm test
       - uses: codecov/codecov-action@v4
         with:

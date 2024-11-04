@@ -1,0 +1,21 @@
+{
+  "license": "HEADER",
+  "trailingWhitespace": "TRIM",
+  "regexIdentifier": "##",
+  "ignoreFile": ".gitignore",
+  "ignore": [
+    "HEADER",
+    "COPYRIGHT",
+    ".*",
+    ".github/",
+    "*.md",
+    "*.yml",
+    "src/secrets/patterns.yaml"
+  ],
+  "licenseFormats": {
+    "js": { "prepend": "/*", "append": " */", "eachLine": { "prepend": " * " } }
+  },
+  "defaultFormat": {
+    "prepend": "/*", "append": " */", "eachLine": { "prepend": " * " }
+  }
+}

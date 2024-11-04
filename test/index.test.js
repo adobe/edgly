@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 
 describe('index', () => {
   it('is true (placeholder test)', () => {

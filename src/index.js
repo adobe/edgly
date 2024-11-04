@@ -11,4 +11,35 @@
  * governing permissions and limitations under the License.
  */
 
-console.log('fastly-svc at your service!');
+import fetch from './commands/fetch.js';
+import push from './commands/push.js';
+import { GLOBAL_OPTS } from './opts.js';
+import yargsAhoy from './yargs-ahoy.js';
+
+const yargs = yargsAhoy();
+await yargs
+  .command(fetch)
+  .command(push)
+  .demandCommand(1)
+  .recommendCommands()
+  .strict()
+  .options(GLOBAL_OPTS)
+  .env('FASTLY')
+  .version()
+  // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=fastly-svc
+  .prologue('')
+  .prologue('  __           _   _                           ')
+  .prologue(' / _| __ _ ___| |_| |_   _       _____   _____ ')
+  .prologue('| |_ / _` / __| __| | | | |_____/ __\\ \\ / / __|')
+  .prologue('|  _| (_| \\__ \\ |_| | |_| |_____\\__ \\\\ V / (__ ')
+  .prologue('|_|  \\__,_|___/\\__|_|\\__, |     |___/ \\_/ \\___|')
+  .prologue('                     |___/                     ')
+  .prologue('')
+  .usage('$0 [<flags>] <command> [<args> ...]')
+  .usage('')
+  .usage('Tool for developing Fastly services using CI/CD')
+  .epilogue(`Version: ${yargs.getVersion()}`)
+  .run();
+
+// yargs or adobe/fetch hangs at the end, so we have to force quit
+process.exit();

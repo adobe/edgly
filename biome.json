@@ -1,18 +1,51 @@
 {
+  "linter": {
+    "rules": {
+      "all": true,
+      "correctness": {
+        "noUndeclaredVariables": "error",
+        "noNodejsModules": "off"
+      },
+      "suspicious": {
+        "noConsole": "off",
+        "noConsoleLog": "off"
+      },
+      "performance": {
+        "useTopLevelRegex": "off"
+      }
+    }
+  },
+  "formatter": {
+    "ignore": ["package.json", "license-checker-config.json"],
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
   "javascript": {
     "formatter": {
       "quoteStyle": "single"
     }
   },
-  "linter": {
-    "rules": {
-      "recommended": true
+  "files": {
+    "ignore": ["src/fastly.js"]
+  },
+  "overrides": [
+    {
+      "include": ["test/**/*.js"],
+      "javascript": {
+        "globals": ["describe", "it"]
+      }
+    },
+    {
+      "include": ["src/commands/*.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
     }
-  },
-  "formatter": {
-    "ignore": ["package.json"],
-    "indentStyle": "space"
-  },
+  ],
   "vcs": {
     "enabled": true,
     "clientKind": "git",

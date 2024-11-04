@@ -52,6 +52,7 @@ function openFile(file, mode) {
 }
 
 async function fetchService(apiToken, serviceId) {
+  console.log(`Fetching service ${serviceId}...`);
   const fastly = new Fastly(apiToken);
 
   try {
@@ -319,20 +320,34 @@ function writeServiceConfig(service) {
   console.log(`Successfully written ${service.service_id} v${service.version}.`);
 }
 
+function getStoredServiceId() {
+  if (fs.existsSync(FILE_SERVICE)) {
+    try {
+      return JSON.parse(fs.readFileSync(FILE_SERVICE, 'utf8'))?.service_id;
+    } catch (_ignore) {
+      // ignore
+    }
+  }
+}
+
 export default {
-  command: 'fetch <service-id>',
+  command: 'fetch [service-id]',
   describe: 'Download service config',
   builder: (yargs) => {
-    yargs.usage('$0 fetch <service-id>');
+    yargs.usage('$0 fetch [service-id]');
     yargs.usage('');
     yargs.usage('Fetch service config from Fastly and write to current folder.');
 
     yargs.positional('service-id', SHARED_ARGS.serviceId);
   },
   handler: async (argv) => {
-    console.log(`Fetching service ${argv.serviceId}...`);
+    const serviceId = getStoredServiceId() || argv.serviceId;
+    if (!serviceId) {
+      console.error('Error: No service ID provided.');
+      process.exit(1);
+    }
 
-    const service = await fetchService(argv.apiToken, argv.serviceId);
+    const service = await fetchService(argv.apiToken, serviceId);
 
     cleanup(service, argv.config);
     detectSecrets(service, argv.config?.secrets);

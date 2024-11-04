@@ -9,7 +9,6 @@
   },
   "scripts": {
     "test": "c8 mocha",
-    "OFF_posttest": "biome check --reporter=summary || (echo \"Run 'npm run lint' for lint error details. 'npm run lint:fix' for automatic fixing.\" && false)",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "lint-ci": "biome ci --reporter=github",

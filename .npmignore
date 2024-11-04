@@ -9,4 +9,7 @@ logs
 node_modules
 renovate.json
 biome.json
+license-checker-config.json
 lefthook.yml
+HEADER
+tmp

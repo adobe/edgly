@@ -24,7 +24,7 @@ export const GLOBAL_OPTS = {
   c: {
     alias: 'config',
     type: 'string',
-    default: 'fastly-svc.yaml',
+    default: 'fastly-dev.yaml',
     describe: 'Config file (YAML)',
     coerce: (file) => {
       if (fs.existsSync(file)) {

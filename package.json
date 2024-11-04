@@ -1,11 +1,11 @@
 {
-  "name": "@adobe/fastly-svc",
+  "name": "@adobe/fastly-dev",
   "version": "0.0.1",
-  "description": "Tool for developing Fastly services using CI/CD",
+  "description": "Tool for developing Fastly VCL services using CI/CD",
   "main": "src/index.js",
   "type": "module",
   "bin": {
-    "fastly-svc": "src/index.js"
+    "fastly-dev": "src/index.js"
   },
   "scripts": {
     "test": "c8 mocha",
@@ -59,10 +59,10 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adobe/fastly-svc"
+    "url": "https://github.com/adobe/fastly-dev"
   },
   "bugs": {
-    "url": "https://github.com/adobe/fastly-svc/issues"
+    "url": "https://github.com/adobe/fastly-dev/issues"
   },
-  "homepage": "https://github.com/adobe/fastly-svc#readme"
+  "homepage": "https://github.com/adobe/fastly-dev#readme"
 }

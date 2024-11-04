@@ -26,18 +26,18 @@ await yargs
   .options(GLOBAL_OPTS)
   .env('FASTLY')
   .version()
-  // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=fastly-svc
+  // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=fastly-dev
   .prologue('')
-  .prologue('  __           _   _                           ')
-  .prologue(' / _| __ _ ___| |_| |_   _       _____   _____ ')
-  .prologue('| |_ / _` / __| __| | | | |_____/ __\\ \\ / / __|')
-  .prologue('|  _| (_| \\__ \\ |_| | |_| |_____\\__ \\\\ V / (__ ')
-  .prologue('|_|  \\__,_|___/\\__|_|\\__, |     |___/ \\_/ \\___|')
-  .prologue('                     |___/                     ')
+  .prologue('   __           _   _                 _            ')
+  .prologue('  / _| __ _ ___| |_| |_   _        __| | _____   __')
+  .prologue(' | |_ / _` / __| __| | | | |_____ / _` |/ _ \\ \\ / /')
+  .prologue(' |  _| (_| \\__ \\ |_| | |_| |_____| (_| |  __/\\ V / ')
+  .prologue(' |_|  \\__,_|___/\\__|_|\\__, |      \\__,_|\\___| \\_/  ')
+  .prologue('                      |___/                        ')
   .prologue('')
   .usage('$0 [<flags>] <command> [<args> ...]')
   .usage('')
-  .usage('Tool for developing Fastly services using CI/CD')
+  .usage('Tool for developing Fastly VCL services using CI/CD')
   .epilogue(`Version: ${yargs.getVersion()}`)
   .run();
 

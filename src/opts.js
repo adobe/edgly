@@ -10,28 +10,29 @@
  * governing permissions and limitations under the License.
  */
 
-import fs from 'node:fs';
-import yaml from 'yaml';
+import { Config } from './config.js';
 
 export const GLOBAL_OPTS = {
-  t: {
-    alias: 'api-token',
+  'api-token': {
+    alias: 't',
     type: 'string',
     describe: 'Fastly API Token',
     demandOption:
       'You must provide a Fastly API Token with -t/--api-token or via the FASTLY_API_TOKEN environment variable.',
   },
-  c: {
-    alias: 'config',
+  config: {
+    alias: 'c',
     type: 'string',
     default: 'fastly-dev.yaml',
     describe: 'Config file (YAML)',
     coerce: (file) => {
-      if (fs.existsSync(file)) {
-        return yaml.parse(fs.readFileSync(file, 'utf8'));
-      }
-      return {};
+      return Config.read(file);
     },
+  },
+  dryRun: {
+    alias: 'd',
+    type: 'boolean',
+    describe: 'Do not write to disk or make changes in Fastly',
   },
 };
 
@@ -44,8 +45,8 @@ export const SHARED_ARGS = {
 
 export const SHARED_OPTS = {
   environment: {
-    e: {
-      alias: 'env',
+    env: {
+      alias: 'e',
       type: 'string',
       describe: 'Environment',
       default: 'production',

@@ -93,7 +93,10 @@ function detectSecretsInString(input, patterns, config) {
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: still readable
-export function detectSecrets(service, config) {
+export function detectSecrets(fastlyService, config) {
+  console.log();
+  console.log('Checking for secrets in service config...');
+  const service = fastlyService.service;
   const patterns = yaml.parse(fs.readFileSync(PATTERNS, 'utf8'));
 
   let secretFound = false;
@@ -124,7 +127,7 @@ export function detectSecrets(service, config) {
     if (matches.length > 0) {
       secretFound = true;
       console.warn();
-      console.warn(`Possible secrets found in dictionary '${dict.name}':`);
+      console.warn(`Warning: Possible secrets found in dictionary '${dict.name}':`);
       for (const item of matches) {
         console.warn(`- ${item.key}: ${truncate(item.secret, 40)} (${item.type})`);
       }
@@ -158,7 +161,7 @@ export function detectSecrets(service, config) {
   if (secretFound) {
     console.warn();
     console.warn(
-      'WARNING: Please review for secrets above BEFORE committing code to version control.',
+      'Warning: Please review for secrets above BEFORE committing code to version control.',
     );
     console.warn();
     console.warn('Actions:');

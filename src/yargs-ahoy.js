@@ -153,7 +153,7 @@ export default function yargsAhoy(processArgs, cwd, parentRequire) {
 
   // rewrite help output
   // - support prologue handling
-  // - command list: do not prefix every command with main script name
+  // - command list: only list commands (not prefix script name, nor list positionals)
   const usage = yargs.getInternalMethods().getUsageInstance();
   usage._help = usage.help;
   usage.help = function () {
@@ -161,20 +161,26 @@ export default function yargsAhoy(processArgs, cwd, parentRequire) {
     lines.push(...yargs._prologues);
     lines.push(chalk.bold('USAGE'));
 
-    const $0 = yargs.$0;
-    const scriptName = yargs.customScriptName ? $0 : path.basename($0);
     const help = this._help();
 
+    const commands = yargs.getInternalMethods().getCommandInstance().handlers;
+    const maxCmdLen = Math.max(...Object.keys(commands).map((c) => c.length));
+
     let inCommandsList = false;
-    for (let line of help.split('\n')) {
+    for (const line of help.split('\n')) {
       if (line === COMMANDS) {
         inCommandsList = true;
+        lines.push(line);
+        // custom command listing
+        for (const command of Object.keys(commands)) {
+          lines.push(`  ${command.padEnd(maxCmdLen)}    ${commands[command].description}`);
+        }
       } else if (inCommandsList && line === '') {
         inCommandsList = false;
-      } else if (inCommandsList) {
-        line = line.replace(`  ${scriptName} `, '  ');
+        lines.push(line);
+      } else if (!inCommandsList) {
+        lines.push(line);
       }
-      lines.push(line);
     }
 
     return lines.join('\n');

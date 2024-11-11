@@ -24,6 +24,30 @@ const removeProperties = (obj, toRemove) => Object.keys(obj)
     return target;
   }, {});
 
+function removeEmptyStrings(properties, toRemove) {
+  const result = {};
+  for (const key of Object.keys(properties)) {
+    if (properties[key] !== '' && !toRemove.includes(key)) {
+      result[key] = properties[key];
+    }
+  }
+  return result;
+}
+
+function toFormData(properties) {
+  const body = new FormData();
+  for (const key of Object.keys(properties)) {
+    if (properties[key] !== null) {
+      if (typeof properties[key] === 'string') {
+        body.append(key, properties[key]);
+      } else {
+        body.append(key, String(properties[key]));
+      }
+    }
+  };
+  return body;
+}
+
 class Fastly {
   constructor(authToken) {
     this.authToken = authToken;
@@ -35,12 +59,21 @@ class Fastly {
     return reset();
   }
 
+  fetch(url, options) {
+    const [method, path] = url.split(' ', 2);
+    return fetch(
+      `${this.endpoint}${path}`,
+      {
+        method,
+        headers: { 'Fastly-Key': this.authToken },
+        ...options,
+      }
+    );
+  }
+
   async latestVersion(serviceId) {
     // determine latest service version
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version`);
     if (!resp.ok) {
       throw new Error(`Failed to determine latest version of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -51,10 +84,7 @@ class Fastly {
 
   async activeVersion(serviceId) {
     // determine active service version
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version`);
     if (!resp.ok) {
       throw new Error(`Failed to determine active version of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -64,36 +94,36 @@ class Fastly {
       .pop();
   }
 
-  async cloneVersion(serviceId, versionId, comment) {
-    const method = 'PUT';
-    let resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/clone`,
-      { method, headers: { 'Fastly-Key': this.authToken } },
-    );
+  async createVersion(serviceId) {
+    let resp = await this.fetch(`POST /service/${serviceId}/version`);
+    if (!resp.ok) {
+      throw new Error(`Failed to create version: ${resp.status} - ${await resp.text()}`);
+    }
+    const { number: newVersionId } = await resp.json();
+    return newVersionId;
+  }
+
+  async cloneVersion(serviceId, versionId) {
+    let resp = await this.fetch(`PUT /service/${serviceId}/version/${versionId}/clone`);
     if (!resp.ok) {
       throw new Error(`Failed to clone version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
     const { number: newVersionId } = await resp.json();
-    if (typeof comment === 'string' && comment.length) {
-      const body = new FormData();
-      body.append('comment', comment);
-      resp = await fetch(
-        `${this.endpoint}/service/${serviceId}/version/${newVersionId}`,
-        { method, body, headers: { 'Fastly-Key': this.authToken } },
-      );
-      if (!resp.ok) {
-        throw new Error(`Failed to set comment '${comment}' of cloned version ${newVersionId}: ${resp.status} - ${await resp.text()}`);
-      }
-    }
     return newVersionId;
   }
 
+  // options: https://github.com/fastly/fastly-js/blob/main/docs/VersionApi.md#updateServiceVersion
+  async updateVersion(serviceId, versionId, options) {
+    const http = `PUT /service/${serviceId}/version/${versionId}`;
+    const body = toFormData(options);
+    const resp = await this.fetch(http, { body });
+    if (!resp.ok) {
+      throw new Error(`Failed to update version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+}
+
   async activateVersion(serviceId, versionId) {
-    const method = 'PUT';
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/activate`,
-      { method, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`PUT /service/${serviceId}/version/${versionId}/activate`);
     if (!resp.ok) {
       throw new Error(`Failed to activate version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -101,10 +131,7 @@ class Fastly {
   }
 
   async serviceDetails(serviceId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/details`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/details`);
     if (!resp.ok) {
       throw new Error(`Failed to retrieve details of service ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -112,10 +139,7 @@ class Fastly {
   }
 
   async backends(serviceId, versionId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/backend`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/backend`);
     if (!resp.ok) {
       throw new Error(`Failed to list backends of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -125,10 +149,7 @@ class Fastly {
 
   async acls(serviceId, versionId) {
     // get ACL
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/acl`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/acl`);
     if (!resp.ok) {
       throw new Error(`Failed to list ACLs of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -137,10 +158,7 @@ class Fastly {
   }
 
   async domains(serviceId, versionId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/domain`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/domain`);
     if (!resp.ok) {
       throw new Error(`Failed to list domains of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -149,10 +167,7 @@ class Fastly {
   }
 
   async conditions(serviceId, versionId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/condition`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/condition`);
     if (!resp.ok) {
       throw new Error(`Failed to list conditions of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -161,10 +176,7 @@ class Fastly {
   }
 
   async dictionary(serviceId, versionId, dictName) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/dictionary/${dictName}`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary/${dictName}`);
     if (!resp.ok) {
       throw new Error(`Failed to get dictionary ${dictName} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -173,10 +185,7 @@ class Fastly {
   }
 
   async dictionaryInfo(serviceId, versionId, dictionaryId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/dictionary/${dictionaryId}/info`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary/${dictionaryId}/info`);
     if (!resp.ok) {
       throw new Error(`Failed to get dictionary info for ${dictionaryId} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -185,10 +194,7 @@ class Fastly {
   }
 
   async dictionaries(serviceId, versionId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/dictionary`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary`);
     if (!resp.ok) {
       throw new Error(`Failed to list dictionaries of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -197,10 +203,7 @@ class Fastly {
   }
 
   async aclEntries(serviceId, aclId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/acl/${aclId}/entries`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/acl/${aclId}/entries`);
     if (!resp.ok) {
       throw new Error(`Failed to list entries of ACL ${aclId} of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -209,10 +212,7 @@ class Fastly {
   }
 
   async dictionaryItems(serviceId, dictionaryId, pageSize = 1000, page = 1) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/dictionary/${dictionaryId}/items?per_page=${pageSize}&page=${page}`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/dictionary/${dictionaryId}/items?per_page=${pageSize}&page=${page}`);
     if (!resp.ok) {
       throw new Error(`Failed to list items of dictionary ${dictionaryId} of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -221,10 +221,7 @@ class Fastly {
   }
 
   async generatedVCL(serviceId, versionId) {
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/generated_vcl`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/generated_vcl`);
     if (!resp.ok) {
       throw new Error(`Failed to get generated VCL of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -232,24 +229,15 @@ class Fastly {
   }
 
   async updateDict(serviceId, versionId, dictName, entries, writeOnly, batchSize = 500) {
-    let method;
-    let body;
-
     // get dict
-    let resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/dictionary/${dictName}`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    let resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary/${dictName}`);
     if (!resp.ok) {
       // create dict
-      method = 'POST';
-      body = new FormData();
-      body.append('name', dictName);
-      body.append('write_only', String(writeOnly));
-      resp = await fetch(
-        `${this.endpoint}/service/${serviceId}/version/${versionId}/dictionary`,
-        { method, body, headers: { 'Fastly-Key': this.authToken } },
-      );
+      const body = toFormData({
+        name: dictName,
+        write_only: String(writeOnly),
+      });
+      resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/dictionary`, { body });
       if (!resp.ok) {
         throw new Error(`Failed to create dictionary '${dictName}': ${resp.status} - ${await resp.text()}`);
       }
@@ -259,13 +247,9 @@ class Fastly {
     const items = Object.entries(entries).map(([key, value]) => ({ op: 'upsert', item_key: key, item_value: value }));
 
     while (items.length) {
-      method = 'PATCH';
-      body = { items: items.splice(0, batchSize) };
+      const body = { items: items.splice(0, batchSize) };
       // eslint-disable-next-line no-await-in-loop
-      resp = await fetch(
-        `${this.endpoint}/service/${serviceId}/dictionary/${id}/items`,
-        { method, body, headers: { 'Fastly-Key': this.authToken } },
-      );
+      resp = await this.fetch(`PATCH /service/${serviceId}/dictionary/${id}/items`, { body });
       if (!resp.ok) {
         // eslint-disable-next-line no-await-in-loop
         throw new Error(`Failed to patch dictionary '${dictName}': ${resp.status} - ${await resp.text()}`);
@@ -274,14 +258,8 @@ class Fastly {
   }
 
   async purgeDict(serviceId, versionId, dictName, batchSize = 500) {
-    let method;
-    let body;
-
     // get dict
-    let resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/dictionary/${dictName}`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    let resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary/${dictName}`);
     if (!resp.ok) {
       throw new Error(`Failed to get dictionary '${dictName}': ${resp.status} - ${await resp.text()}`);
     }
@@ -291,13 +269,9 @@ class Fastly {
     const items = entries.map(({ item_key }) => ({ op: 'delete', item_key }));
 
     while (items.length) {
-      method = 'PATCH';
-      body = { items: items.splice(0, batchSize) };
+      const body = { items: items.splice(0, batchSize) };
       // eslint-disable-next-line no-await-in-loop
-      resp = await fetch(
-        `${this.endpoint}/service/${serviceId}/dictionary/${id}/items`,
-        { method, body, headers: { 'Fastly-Key': this.authToken } },
-      );
+      resp = await this.fetch(`PATCH /service/${serviceId}/dictionary/${id}/items`, { body });
       if (!resp.ok) {
         // eslint-disable-next-line no-await-in-loop
         throw new Error(`Failed to patch dictionary '${dictName}': ${resp.status} - ${await resp.text()}`);
@@ -306,15 +280,8 @@ class Fastly {
   }
 
   async createService(name, type = 'vcl', comment = '') {
-    const method = 'POST';
-    const body = new FormData();
-    body.append('name', name);
-    body.append('type', type);
-    body.append('comment', comment);
-    const resp = await fetch(
-      `${this.endpoint}/service`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const body = toFormData({ name, type, comment });
+    const resp = await this.fetch(`POST /service`, { body });
     if (!resp.ok) {
       throw new Error(`Failed to create service '${name}': ${resp.status} - ${await resp.text()}`);
     }
@@ -322,14 +289,8 @@ class Fastly {
   }
 
   async addDomain(serviceId, versionId, name, comment) {
-    const method = 'POST';
-    const body = new FormData();
-    body.append('name', name);
-    body.append('comment', comment);
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/domain`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const body = toFormData({ name, comment });
+    const resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/domain`, { body });
     if (!resp.ok) {
       throw new Error(`Failed to add domain '${name}': ${resp.status} - ${await resp.text()}`);
     }
@@ -337,21 +298,8 @@ class Fastly {
   }
 
   async createCondition(serviceId, versionId, condition) {
-    const method = 'POST';
-    const body = new FormData();
-    Object.keys(condition).forEach((key) => {
-      if (condition[key] !== null) {
-        if (typeof condition[key] === 'string') {
-          body.append(key, condition[key]);
-        } else {
-          body.append(key, String(condition[key]));
-        }
-      }
-    });
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/condition`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const body = toFormData(condition);
+    const resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/condition`, { body });
     if (!resp.ok) {
       throw new Error(`Failed to create condition '${condition.name}': ${resp.status} - ${await resp.text()}`);
     }
@@ -359,21 +307,8 @@ class Fastly {
   }
 
   async createSnippet(serviceId, versionId, snippet) {
-    const method = 'POST';
-    const body = new FormData();
-    Object.keys(snippet).forEach((key) => {
-      if (snippet[key] !== null) {
-        if (typeof snippet[key] === 'string') {
-          body.append(key, snippet[key]);
-        } else {
-          body.append(key, String(snippet[key]));
-        }
-      }
-    });
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/snippet`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const body = toFormData(snippet);
+    const resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/snippet`, { body });
     if (!resp.ok) {
       throw new Error(`Failed to create snippet '${snippet.name}': ${resp.status} - ${await resp.text()}`);
     }
@@ -381,24 +316,9 @@ class Fastly {
   }
 
   async updateSettings(serviceId, versionId, settings) {
-    const method = 'PUT';
-    const body = new FormData();
-    Object.keys(settings).forEach((key) => {
-      if (settings[key] !== null) {
-        if (['general.default_host', 'general.stale_if_error', 'general.default_ttl', 'general.stale_if_error_ttl']
-          .includes(key)) {
-          if (typeof settings[key] === 'string') {
-            body.append(key, settings[key]);
-          } else {
-            body.append(key, String(settings[key]));
-          }
-        }
-      }
-    });
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/settings`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const http = `PUT /service/${serviceId}/version/${versionId}/settings`;
+    const body = toFormData(removeEmptyStrings(settings, ['general.default_pci']));
+    const resp = await this.fetch(http, { body });
     if (!resp.ok) {
       throw new Error(`Failed to update settings of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -406,21 +326,8 @@ class Fastly {
   }
 
   async createBackend(serviceId, versionId, backend) {
-    const method = 'POST';
-    const body = new FormData();
-    Object.keys(backend).forEach((key) => {
-      if (backend[key] !== null) {
-        if (typeof backend[key] === 'string') {
-          body.append(key, backend[key]);
-        } else {
-          body.append(key, String(backend[key]));
-        }
-      }
-    });
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/backend`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const http = `POST /service/${serviceId}/version/${versionId}/backend`;
+    const resp = await this.fetch(http, { body: toFormData(backend) });
     if (!resp.ok) {
       throw new Error(`Failed to create backend '${backend.name}': ${resp.status} - ${await resp.text()}`);
     }
@@ -428,13 +335,8 @@ class Fastly {
   }
 
   async createACL(serviceId, versionId, aclName) {
-    const method = 'POST';
-    const body = new FormData();
-    body.append('name', aclName);
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/acl`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+    const http = `POST /service/${serviceId}/version/${versionId}/acl`;
+    const resp = await this.fetch(http, {  body: toFormData({ name: aclName }) });
     if (!resp.ok) {
       throw new Error(`Failed to create ACL '${aclName}': ${resp.status} - ${await resp.text()}`);
     }
@@ -442,22 +344,13 @@ class Fastly {
   }
 
   async updateACL(serviceId, versionId, aclName, entries, batchSize = 500) {
-    let method;
-    let body;
-
     // get ACL
-    let resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/acl/${aclName}`,
-      { headers: { 'Fastly-Key': this.authToken } },
-    );
+    let resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/acl/${aclName}`);
     if (!resp.ok) {
       // create ACL
-      method = 'POST';
-      body = new FormData();
-      body.append('name', aclName);
-      resp = await fetch(
-        `${this.endpoint}/service/${serviceId}/version/${versionId}/acl`,
-        { method, body, headers: { 'Fastly-Key': this.authToken } },
+      resp = await this.fetch(
+        `POST /service/${serviceId}/version/${versionId}/acl`,
+        { body: toFormData({ name: aclName }) }
       );
       if (!resp.ok) {
         throw new Error(`Failed to create ACL '${aclName}': ${resp.status} - ${await resp.text()}`);
@@ -471,13 +364,9 @@ class Fastly {
     }));
 
     while (items.length) {
-      method = 'PATCH';
-      body = { entries: items.splice(0, batchSize) };
+      const body = { entries: items.splice(0, batchSize) };
       // eslint-disable-next-line no-await-in-loop
-      resp = await fetch(
-        `${this.endpoint}/service/${serviceId}/acl/${id}/entries`,
-        { method, body, headers: { 'Fastly-Key': this.authToken } },
-      );
+      resp = await this.fetch(`PATCH /service/${serviceId}/acl/${id}/entries`, { body });
       if (!resp.ok) {
         // eslint-disable-next-line no-await-in-loop
         throw new Error(`Failed to patch ACL '${aclName}': ${resp.status} - ${await resp.text()}`);
@@ -485,22 +374,102 @@ class Fastly {
     }
   }
 
-  async updateHttpsLogEndpoint(serviceId, versionId, name, properties) {
-    const method = 'PUT';
-    const body = new FormData();
-    Object.keys(properties).forEach((key) => {
-      if (typeof properties[key] === 'string') {
-        body.append(key, properties[key]);
-      } else {
-        body.append(key, String(properties[key]));
-      }
-    });
-    const resp = await fetch(
-      `${this.endpoint}/service/${serviceId}/version/${versionId}/logging/https/${name}`,
-      { method, body, headers: { 'Fastly-Key': this.authToken } },
-    );
+  async addLogEndpoint(serviceId, versionId, type, name, properties) {
+    const http = `POST /service/${serviceId}/version/${versionId}/logging/${type}`;
+    const body = toFormData(removeEmptyStrings(properties, ['response_condition']));
+    const resp = await this.fetch(http, { body });
     if (!resp.ok) {
-      throw new Error(`Failed to update https log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(`Failed to add ${type} log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async updateLogEndpoint(serviceId, versionId, type, name, properties) {
+    const http = `PUT /service/${serviceId}/version/${versionId}/logging/${type}/${name}`;
+    const body = toFormData(removeEmptyStrings(properties, ['response_condition']));
+    const resp = await this.fetch(http, { body });
+    if (!resp.ok) {
+      throw new Error(`Failed to update ${type} log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async enabledProducts(serviceId) {
+    const PRODUCTS = [
+      'brotli_compression',
+      'domain_inspector',
+      'fanout',
+      'image_optimizer',
+      'origin_inspector',
+      'websockets',
+      'bot_management',
+      'ngwaf'
+    ];
+    const products = {};
+    for (const product of PRODUCTS) {
+      const http = `GET /enabled-products/v1/${product}/services/${serviceId}`;
+      const resp = await this.fetch(http);
+      if (resp.status !== 200 && resp.status !== 400) {
+        throw new Error(`Failed to retrieve product status for ${product} on service ${serviceId}: ${resp.status} - ${await resp.text()}`);
+      }
+      const result = await resp.json();
+      products[product] = result?.product?.id === product;
+    }
+    return products;
+  }
+
+  async enableProduct(serviceId, product) {
+    const http = `PUT /enabled-products/v1/${product}/services/${serviceId}`;
+    const resp = await this.fetch(http);
+    if (!resp.ok) {
+      throw new Error(`Failed to enable product ${product} on service ${serviceId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async updateImageOptimizerSettings(serviceId, versionId, settings) {
+    const http = `PATCH /service/${serviceId}/version/${versionId}/image_optimizer_default_settings`;
+    const resp = await this.fetch(http, { body: settings });
+    if (!resp.ok) {
+      throw new Error(`Failed to update Image Optimizer settings on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async createVCL(serviceId, versionId, name, content, main = false) {
+    const http = `POST /service/${serviceId}/version/${versionId}/vcl`;
+    const body = toFormData({ name, content, main });
+    const resp = await this.fetch(http, { body });
+    if (!resp.ok) {
+      throw new Error(`Failed to create VCL ${name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async updateVCL(serviceId, versionId, name, content, main = false) {
+    const http = `PUT /service/${serviceId}/version/${versionId}/vcl/${name}`;
+    const body = toFormData({ content, main });
+    const resp = await this.fetch(http, { body });
+    if (!resp.ok) {
+      throw new Error(`Failed to update VCL ${name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async createHeader(serviceId, versionId, header) {
+    const http = `POST /service/${serviceId}/version/${versionId}/header`;
+    const resp = await this.fetch(http, { body: toFormData(header) });
+    if (!resp.ok) {
+      throw new Error(`Failed to create header ${header.name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
+  }
+
+  async addRequestSetting(serviceId, versionId, requestSetting) {
+    const http = `POST /service/${serviceId}/version/${versionId}/request_settings`;
+    const resp = await this.fetch(http, { body: toFormData(requestSetting) });
+    if (!resp.ok) {
+      throw new Error(`Failed to add request setting ${requestSetting.name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
     return resp.json();
   }

@@ -13,6 +13,7 @@
 
 import fetch from './commands/fetch.js';
 import push from './commands/push.js';
+import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
 import yargsAhoy from './yargs-ahoy.js';
 
@@ -20,12 +21,13 @@ const yargs = yargsAhoy();
 await yargs
   .command(fetch)
   .command(push)
+  .command(version)
+  .version(false)
   .demandCommand(1)
   .recommendCommands()
   .strict()
   .options(GLOBAL_OPTS)
   .env('FASTLY')
-  .version()
   // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=fastly-dev
   .prologue('')
   .prologue('   __           _   _                 _            ')
@@ -38,7 +40,7 @@ await yargs
   .usage('$0 [<flags>] <command> [<args> ...]')
   .usage('')
   .usage('Tool for developing Fastly VCL services using CI/CD')
-  .epilogue(`Version: ${yargs.getVersion()}`)
+  .epilogue(`Version: ${version.getVersion()}`)
   .run();
 
 // yargs or adobe/fetch hangs at the end, so we have to force quit

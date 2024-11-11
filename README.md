@@ -1,6 +1,6 @@
 ## @adobe/fastly-dev
 
-> CLI for working with Fastly services
+> Tool for developing Fastly VCL services using CI/CD
 ---
 
 TODO feature description
@@ -76,8 +76,8 @@ fastly-dev fiddle fetch <fiddle-id>
 ```
 
 
-### Contributing
+## Contributing
 Contributions are welcomed! Read the [Contributing Guide](./.github/CONTRIBUTING.md) for more information.
 
-### Licensing
+## Licensing
 This project is licensed under the Apache V2 License. See [LICENSE](LICENSE) for more information.

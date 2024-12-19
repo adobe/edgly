@@ -14,6 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { globSync } from 'glob';
 import { Fastly } from './fastly.js';
+import { detectSecrets, replaceSecretVars } from './secrets/secrets.js';
 
 export const FILE_SERVICE = 'service.json';
 const FILE_ACL = 'acl.json';
@@ -25,7 +26,7 @@ const DIR_DICTIONARIES = 'dictionaries';
 const DIVIDER = '# ===========================================================================';
 
 export const LOG_TYPES = {
-  bigqueries: { api: 'bigquery', secretField: 'secret_key' },
+  bigqueries: { api: 'bigquery' },
   // 'cloudfiles',
   // 'datadog',
   // 'digitalocean',
@@ -34,7 +35,7 @@ export const LOG_TYPES = {
   // 'gcs',
   // 'pubsub',
   // 'grafanacloudlogs',
-  https: { api: 'https', secretField: 'header_value' },
+  https: { api: 'https' },
   // 'heroku',
   // 'honeycomb',
   // 'kafka',
@@ -42,14 +43,14 @@ export const LOG_TYPES = {
   // 'logshuttle',
   // 'loggly',
   // 'azureblob',
-  newrelics: { api: 'newrelic', secretField: 'token' },
+  newrelics: { api: 'newrelic' },
   // 'newrelicotlp',
   // 'openstack',
   // 'papertrail',
   // 's3',
   // 'sftp',
   // 'scalyr',
-  splunks: { api: 'splunk', secretField: 'token' },
+  splunks: { api: 'splunk' },
   // 'sumologic',
   // 'syslog',
 };
@@ -131,12 +132,17 @@ function getSnippetsBySubroutine(snippets) {
   return subs;
 }
 
+/**
+ * Fastly service configuration
+ */
 export class FastlyService {
   #config;
   #fastly;
+  #secretsMode;
 
-  constructor(apiToken) {
+  constructor(apiToken, secretsMode) {
     this.#fastly = new Fastly(apiToken);
+    this.#secretsMode = secretsMode;
   }
 
   get service() {
@@ -159,7 +165,7 @@ export class FastlyService {
     await this.#fastly.dispose();
   }
 
-  unsupportedCheck() {
+  #unsupportedCheck() {
     const unsupported = [];
     for (const key of Object.keys(this.#config)) {
       const value = this.#config[key];
@@ -180,6 +186,11 @@ export class FastlyService {
     }
   }
 
+  /**
+   * Download the active service configuration from Fastly.
+   *
+   * @param {string} serviceId Fastly service id
+   */
   async download(serviceId) {
     if (this.#config) {
       throw new Error('Service already loaded.');
@@ -234,12 +245,21 @@ export class FastlyService {
         }
       }
 
-      this.unsupportedCheck();
+      this.#unsupportedCheck();
     } finally {
       await fastly.dispose();
     }
   }
 
+  /**
+   * Create a blank new Fastly service remotely.
+   * Does not upload any configuration, but enables the necessary products
+   * defined in the current config.products.
+   *
+   * @param {string} name Fastly service name
+   * @param {string} comment Fastly service comment
+   * @returns {object} with new service id ('id') and version ('version')
+   */
   async create(name, comment) {
     const config = this.#config;
     const fastly = this.#fastly;
@@ -269,6 +289,13 @@ export class FastlyService {
     };
   }
 
+  /**
+   * Create a new version of the Fastly service remotely.
+   * Does not upload any configuration.
+   *
+   * @param {string} serviceId Fastly service id
+   * @returns {number} newly created version number
+   */
   async newVersion(serviceId) {
     console.log(`Creating empty new version for Fastly service ${serviceId}...`);
 
@@ -277,10 +304,18 @@ export class FastlyService {
     return await this.#fastly.createVersion(serviceId);
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: fix later
+  /**
+   * Upload service configuration to a Fastly service at a given version
+   *
+   * @param {string} serviceId Fastly service id
+   * @param {number} version Fastly service version
+   */
   async upload(serviceId, version) {
     if (!(serviceId && version)) {
       throw new Error('Missing required arguments in FastlyService.upload().');
+    }
+    if (!this.#config) {
+      throw new Error('No service configuration loaded using read().');
     }
 
     const fastly = this.#fastly;
@@ -381,22 +416,16 @@ export class FastlyService {
     // map from name in service detail response to name in Fastly API
     for (const type of Object.keys(LOG_TYPES)) {
       if (config[type]) {
-        const { api, secretField } = LOG_TYPES[type];
+        const { api } = LOG_TYPES[type];
         for (const logConfig of config[type]) {
           console.log(`  ${api}: ${logConfig.name}`);
-
-          // support env var replacement for log api credentials
-          const val = logConfig[secretField];
-          if (val?.startsWith('$')) {
-            logConfig[secretField] = process.env[val.slice(1)] || '';
-          }
 
           await fastly.addLogEndpoint(serviceId, version, api, logConfig.name, logConfig);
         }
       }
     }
 
-    this.unsupportedCheck();
+    this.#unsupportedCheck();
 
     console.log(
       `Successfully updated service v${version}: https://manage.fastly.com/configure/services/${serviceId}`,
@@ -633,6 +662,7 @@ export class FastlyService {
         file.writeLn(`# last_updated: ${dict.info.last_updated}`);
         file.writeLn(`# item_count: ${dict.info.item_count}`);
         // TODO: how to handle file with env vars from being overwritten?
+        //       see below in #readDictionary()
         //       - read local ini file
         //       - compare count, warn if different (show last_updated)
         //       - do not overwrite local file to keep env vars
@@ -671,14 +701,15 @@ export class FastlyService {
             item_key: keyValueMatch[1],
             item_value: keyValueMatch[2],
           });
-        } else {
-          const keyVarMatch = line.match(/([^=]+)=\$(.*)/);
-          if (keyVarMatch) {
-            dict.items.push({
-              item_key: keyVarMatch[1],
-              item_value: process.env[keyVarMatch[2]] || '',
-            });
-          }
+          // } else {
+          //   // TODO: env vars in write-only dictionary ini files
+          //   const keyVarMatch = line.match(/([^=]+)=\$\{\{(.*)\}\}/);
+          //   if (keyVarMatch) {
+          //     dict.items.push({
+          //       item_key: keyVarMatch[1],
+          //       item_value: process.env[keyVarMatch[2]] || '',
+          //     });
+          //   }
         }
       }
     }
@@ -698,7 +729,12 @@ export class FastlyService {
     }
   }
 
+  /**
+   * Write service configuration to current working directory
+   */
   write() {
+    detectSecrets(this.#config, this.#secretsMode);
+
     console.log();
     console.log('Writing configuration to local folder:');
 
@@ -715,6 +751,9 @@ export class FastlyService {
     console.log(`Successfully written ${this.#config.service_id} v${this.#config.version}.`);
   }
 
+  /**
+   * Read service configuration from current working directory
+   */
   read() {
     if (this.#config) {
       throw new Error('Service already loaded.');
@@ -726,5 +765,7 @@ export class FastlyService {
     this.#readSnippets();
     this.#readVcls();
     this.#readDictionaries();
+
+    this.#config = replaceSecretVars(this.#config);
   }
 }

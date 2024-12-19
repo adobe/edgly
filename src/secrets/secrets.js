@@ -15,6 +15,37 @@ import yaml from 'yaml';
 
 const PATTERNS = new URL('patterns.yaml', import.meta.url);
 const ENTROPY_THRESHOLD = 4.5;
+const SECRETS_FILE = '.secrets.env';
+
+export const LOG_SECRET_FIELDS = {
+  bigqueries: 'secret_key',
+  // 'cloudfiles',
+  // 'datadog',
+  // 'digitalocean',
+  // 'elasticsearch',
+  // 'ftp',
+  // 'gcs',
+  // 'pubsub',
+  // 'grafanacloudlogs',
+  https: 'header_value',
+  // 'heroku',
+  // 'honeycomb',
+  // 'kafka',
+  // 'kinesis',
+  // 'logshuttle',
+  // 'loggly',
+  // 'azureblob',
+  newrelics: 'token',
+  // 'newrelicotlp',
+  // 'openstack',
+  // 'papertrail',
+  // 's3',
+  // 'sftp',
+  // 'scalyr',
+  splunks: 'token',
+  // 'sumologic',
+  // 'syslog',
+};
 
 function shannonEntropy(input) {
   function charFrequencies(input) {
@@ -74,16 +105,20 @@ function checkHighEntropy(input, threshold = ENTROPY_THRESHOLD) {
   }
 }
 
-function detectSecretsInString(input, patterns, config) {
+function detectSecretsInString(input, patterns, cfg) {
+  if (!input) {
+    return [];
+  }
+
   const matches = [];
   for (const word of input.split(/[\s:\/\.,&#'"=;]+/)) {
-    if (config?.ignore_values?.includes(word)) {
+    if (cfg?.ignore_values?.includes(word)) {
       continue;
     }
     matches.push(...matchKnownSecretPatterns(patterns, word));
 
     if (matches.length === 0) {
-      const match = checkHighEntropy(word, config?.entropy_threshold);
+      const match = checkHighEntropy(word, cfg?.entropy_threshold);
       if (match) {
         matches.push(match);
       }
@@ -92,80 +127,177 @@ function detectSecretsInString(input, patterns, config) {
   return matches;
 }
 
+function variableExpression(varName) {
+  return `\${{${varName}}}`;
+}
+
+function replaceSecrets(input, secret, variable) {
+  return input.replaceAll(secret, variableExpression(variable));
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: still readable
-export function detectSecrets(fastlyService, config) {
+export function detectSecrets(service, mode) {
+  const cfg = global.config.secrets;
+  // modes:
+  //  warn: print warning
+  //  replace: replace secrets with $ENV VAR (default)
+  // const mode = cfg?.mode || 'replace';
+
   console.log();
-  console.log('Checking for secrets in service config...');
-  const service = fastlyService.service;
+  console.log(`Checking for secrets in service config (mode=${mode})...`);
   const patterns = yaml.parse(fs.readFileSync(PATTERNS, 'utf8'));
 
-  let secretFound = false;
+  const secrets = [];
 
   for (const dict of service.dictionaries) {
-    const matches = [];
+    let i = 0;
     for (const item of dict.items) {
-      if (config?.ignore_keys?.includes(item.item_key)) {
+      if (cfg?.ignore_keys?.includes(item.item_key)) {
         continue;
       }
       // check key because that might also contain a secret if used in some mapping
-      for (const match of detectSecretsInString(item.item_key, patterns, config)) {
-        matches.push({
-          key: item.item_key,
+      for (const match of detectSecretsInString(item.item_key, patterns, cfg)) {
+        i++;
+        const secret = {
+          name: `Dict key in ${dict.name}`,
+          value: match.secret,
           type: match.type,
-          secret: match.secret,
-        });
+          var: `DICT_KEY_${dict.name.toUpperCase()}_${i}`,
+        };
+        secrets.push(secret);
+
+        if (mode === 'replace') {
+          item.item_key = replaceSecrets(item.item_key, secret.value, secret.var);
+        }
       }
       // check value
-      for (const match of detectSecretsInString(item.item_value, patterns, config)) {
-        matches.push({
-          key: item.item_key,
+      for (const match of detectSecretsInString(item.item_value, patterns, cfg)) {
+        const secret = {
+          name: `Dict value ${dict.name}.${item.item_key}`,
+          value: match.secret,
           type: match.type,
-          secret: match.secret,
-        });
-      }
-    }
-    if (matches.length > 0) {
-      secretFound = true;
-      console.warn();
-      console.warn(`Warning: Possible secrets found in dictionary '${dict.name}':`);
-      for (const item of matches) {
-        console.warn(`- ${item.key}: ${truncate(item.secret, 40)} (${item.type})`);
+          var: `DICT_${dict.name.toUpperCase()}_${item.item_key.toUpperCase()}`,
+        };
+        secrets.push(secret);
+
+        if (mode === 'replace') {
+          item.item_value = replaceSecrets(item.item_value, secret.value, secret.var);
+        }
       }
     }
   }
 
   for (const vcl of service.vcls) {
-    const matches = detectSecretsInString(vcl.content, patterns, config);
+    const matches = detectSecretsInString(vcl.content, patterns, cfg);
     if (matches.length > 0) {
-      secretFound = true;
-      console.warn();
-      console.warn(`Possible secrets found in VCL '${vcl.name}':`);
-      for (const item of matches) {
-        console.warn(`- ${truncate(item.secret, 50)} (${item.type})`);
+      for (let i = 0; i < matches.length; i++) {
+        const match = matches[i];
+        const secret = {
+          name: `VCL text ${vcl.name}`,
+          value: match.secret,
+          type: match.type,
+          var: `VCL_${vcl.name.toUpperCase()}_${i}`,
+        };
+        secrets.push(secret);
+
+        if (mode === 'replace') {
+          vcl.content = replaceSecrets(vcl.content, secret.value, secret.var);
+        }
       }
     }
   }
 
   for (const snippet of service.snippets) {
-    const matches = detectSecretsInString(snippet.content, patterns, config);
+    const matches = detectSecretsInString(snippet.content, patterns, cfg);
     if (matches.length > 0) {
-      secretFound = true;
-      console.warn();
-      console.warn(`Possible secrets found in Snippet '${snippet.name}':`);
-      for (const item of matches) {
-        console.warn(`- ${truncate(item.secret, 50)} (${item.type})`);
+      for (let i = 0; i < matches.length; i++) {
+        const match = matches[i];
+        const secret = {
+          name: `Snippet text ${snippet.type}_${snippet.priority}`,
+          value: match.secret,
+          type: match.type,
+          var: `SNIPPET_${snippet.type.toUpperCase()}_${snippet.priority.toUpperCase()}_${i + 1}`,
+        };
+        secrets.push(secret);
+
+        if (mode === 'replace') {
+          snippet.content = replaceSecrets(snippet.content, secret.value, secret.var);
+        }
       }
     }
   }
 
-  if (secretFound) {
-    console.warn();
-    console.warn(
-      'Warning: Please review for secrets above BEFORE committing code to version control.',
-    );
-    console.warn();
-    console.warn('Actions:');
-    console.warn('  SECRET: Consider moving it to a write-only dictionary.');
-    console.warn('  NOPE: Ignore via config under secrets_detector.ignore_keys or ignore_values.');
+  for (const logType of Object.keys(LOG_SECRET_FIELDS)) {
+    const secretField = LOG_SECRET_FIELDS[logType];
+    if (Array.isArray(service[logType])) {
+      for (const logConfig of service[logType]) {
+        if (logConfig[secretField]) {
+          const secret = {
+            name: `Log ${logType}.${secretField}`,
+            value: logConfig[secretField],
+            type: 'Log secret field',
+            var: `LOG_${logType.toUpperCase()}_${secretField.toUpperCase()}`,
+          };
+          secrets.push(secret);
+
+          if (mode === 'replace') {
+            logConfig[secretField] = variableExpression(secret.var);
+          }
+        }
+      }
+    }
   }
+
+  if (secrets.length > 0) {
+    console.warn();
+    if (mode === 'replace') {
+      console.warn(`Found ${secrets.length} potential secrets & replaced with variables:`);
+      for (const secret of secrets) {
+        console.warn(`- ${secret.var} = ${truncate(secret.value, 40)} (${secret.type})`);
+      }
+
+      fs.writeFileSync(SECRETS_FILE, secrets.map((s) => `${s.var}="${s.value}"`).join('\n'));
+    } else {
+      console.warn('Warning: Found following potential secrets:');
+      for (const secret of secrets) {
+        console.warn(`- ${secret.name}: ${truncate(secret.value, 40)} (${secret.type})`);
+      }
+    }
+    console.warn();
+    console.warn('Options:');
+    if (mode === 'replace') {
+      console.warn(
+        `  1. Secrets have been replaced with \${{VAR}} variables, stored in ${SECRETS_FILE}.`,
+      );
+      console.warn(
+        '     DO NOT commit this file to version control, but use CI secret store instead.',
+      );
+    } else {
+      console.warn(
+        '  1. Use built-in env var replacement ${{VAR}}. Run with --secretsMode=replace to replace automatically.',
+      );
+    }
+    console.warn(
+      '  2. Consider using a Fastly write-only dictionary, and dict lookup where possible.',
+    );
+    console.warn(
+      '  3. False positive: Ignore via secrets_detector.ignore_keys or ignore_values config.',
+    );
+  }
+}
+
+export function replaceSecretVars(service) {
+  const json = JSON.stringify(service);
+
+  const replaced = json.replaceAll(/\$\{\{([A-Z0-9_]+)\}\}/g, (match, varName) => {
+    if (process.env[varName]) {
+      console.warn(`Secrets: Replacing ${match} with env var`);
+      return process.env[varName];
+    }
+
+    console.warn(`Warning: Environment variable not found: ${varName}`);
+    return match;
+  });
+
+  return JSON.parse(replaced);
 }

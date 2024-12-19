@@ -11,37 +11,7 @@
  */
 
 import { SHARED_ARGS } from '../opts.js';
-import { detectSecrets } from '../secrets/secrets.js';
-import { FastlyService, LOG_TYPES } from '../service.js';
-
-function redactSecrets(fastlyService, config) {
-  const service = fastlyService.service;
-  // logging: redact sensitive data
-  for (const type of Object.keys(LOG_TYPES)) {
-    const { secretField } = LOG_TYPES[type];
-    if (Array.isArray(service[type])) {
-      for (const logConfig of service[type]) {
-        // TODO: this overwrites any env vars set locally (see FastlyService.upload`
-        logConfig[secretField] = '[REDACTED]';
-        console.warn(
-          `Warning: Redacted ${type} logging field '${secretField}'. Consider replacing with $ENV_VAR_SECRET.`,
-        );
-      }
-    }
-  }
-
-  // TODO: remove configurable redaction feature?
-  // redact configurable dictionary items
-  for (const dict of service.dictionaries) {
-    for (const item of dict.items) {
-      // redact sensitive dictionary items
-      if (config?.secrets?.redact?.dict_keys?.includes(item.item_key)) {
-        console.warn(`- Redacting dictionary item ${item.item_key} = ${item.item_value}`);
-        item.item_value = '[REDACTED]';
-      }
-    }
-  }
-}
+import { FastlyService } from '../service.js';
 
 export default {
   command: 'fetch [service-id]',
@@ -53,11 +23,17 @@ export default {
       .usage('Fetch service config from Fastly and write to current folder.');
 
     yargs.positional('service-id', SHARED_ARGS.serviceId);
+
+    yargs.options({
+      secretsMode: {
+        type: 'string',
+        describe: 'How to handle secrets: replace (default) or warn',
+        default: 'replace',
+      },
+    });
   },
   handler: async (argv) => {
-    const { config } = argv;
-
-    const storedServiceId = config?.env?.production?.service_id;
+    const storedServiceId = global.config.env?.production?.service_id;
 
     if (argv.serviceId && storedServiceId && argv.serviceId !== storedServiceId) {
       console.error(
@@ -74,12 +50,9 @@ export default {
 
     const serviceId = storedServiceId || argv.serviceId;
 
-    const svc = new FastlyService(argv.apiToken);
+    const svc = new FastlyService(argv.apiToken, argv.secretsMode);
     try {
       await svc.download(serviceId);
-
-      redactSecrets(svc, config);
-      detectSecrets(svc, config?.secrets);
 
       if (argv.dryRun) {
         console.log();
@@ -91,8 +64,8 @@ export default {
 
       // update config file with service id
       if (serviceId !== storedServiceId) {
-        config.set('env.production.service_id', serviceId).write();
-        console.log(`Updated ${config.file()} with service id for production.`);
+        global.config.set('env.production.service_id', serviceId).write();
+        console.log(`Updated ${global.config.file()} with service id for production.`);
       }
     } finally {
       await svc.dispose();

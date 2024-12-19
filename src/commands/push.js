@@ -14,13 +14,13 @@ import chalk from 'chalk';
 import { SHARED_OPTS } from '../opts.js';
 import { FastlyService } from '../service.js';
 
-function adjustServiceForEnvironment(fastlyService, config, env) {
+function adjustServiceForEnvironment(fastlyService, env) {
   const { service } = fastlyService;
 
   console.log();
   console.log(`Adjusting domains for environment '${env}'...`);
   const unmappedDomains = [];
-  const envDomains = config?.env?.[env]?.domains;
+  const envDomains = global.config.env?.[env]?.domains;
 
   for (const domain of service.domains) {
     const newDomain = envDomains?.[domain.name];
@@ -92,7 +92,7 @@ export default {
   handler: async (argv) => {
     const { config, env, create } = argv;
 
-    const serviceId = config?.env?.[env]?.service_id;
+    const serviceId = global.config.env?.[env]?.service_id;
 
     if (create && serviceId) {
       console.error(
@@ -115,7 +115,7 @@ export default {
       svc.read();
 
       if (env !== 'production') {
-        await adjustServiceForEnvironment(svc, config, env);
+        await adjustServiceForEnvironment(svc, env);
       }
 
       if (create) {
@@ -139,6 +139,7 @@ export default {
         config.set(`env.${env}.service_id`, id).write();
         console.log(`Updated ${config.file()} with service id for ${env}.`);
 
+        // upload service config to new service
         await svc.upload(id, version);
       } else if (serviceId) {
         svc.service.comment = argv.comment || 'uploaded by fastly-dev';
@@ -159,7 +160,7 @@ export default {
 
         const version = argv.version || (await svc.newVersion(serviceId));
 
-        // update existing service id
+        // update existing service id with config
         await svc.upload(serviceId, version);
       }
     } finally {

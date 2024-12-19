@@ -26,7 +26,8 @@ export const GLOBAL_OPTS = {
     default: 'fastly-dev.yaml',
     describe: 'Config file (YAML)',
     coerce: (file) => {
-      return Config.read(file);
+      global.config = Config.read(file);
+      return global.config;
     },
   },
   dryRun: {

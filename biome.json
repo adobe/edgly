@@ -30,7 +30,8 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "single"
-    }
+    },
+    "globals": ["os"]
   },
   "files": {
     "ignore": ["src/fastly.js"]

@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import { execSync } from 'node:child_process';
 import chalk from 'chalk';
 import { SHARED_OPTS } from '../opts.js';
 import { FastlyService } from '../service.js';
@@ -50,6 +51,14 @@ function adjustServiceForEnvironment(fastlyService, env) {
   // TODO: option to have different dictionaries for different environments
 }
 
+function getLastGitCommit() {
+  try {
+    return execSync('git log -1 --pretty=%B').toString().trim();
+  } catch (_ignore) {
+    return undefined;
+  }
+}
+
 export default {
   command: 'push',
   describe: 'Upload service config',
@@ -78,7 +87,7 @@ export default {
       .options({
         comment: {
           type: 'string',
-          describe: 'Comment for new service version',
+          describe: 'Comment for new service version. Defaults to last git commit message (if available) or user and date.',
         }
       })
       .options({
@@ -90,7 +99,7 @@ export default {
       });
   },
   handler: async (argv) => {
-    const { config, env, create } = argv;
+    const { env, create } = argv;
 
     const serviceId = global.config.env?.[env]?.service_id;
 
@@ -131,18 +140,21 @@ export default {
           return;
         }
 
-        svc.service.comment = `Initial version. Copy of ${svc.id} at ${svc.service.version}`;
+        svc.service.comment = `Initial version, copy of ${svc.id} at version ${svc.service.version}`;
 
         const { id, version } = await svc.create(name, serviceCommment);
 
         // update config file with new service id for environment
-        config.set(`env.${env}.service_id`, id).write();
-        console.log(`Updated ${config.file()} with service id for ${env}.`);
+        global.config.set(`env.${env}.service_id`, id).write();
+        console.log(`Updated ${global.config.file()} with service id for ${env}.`);
 
         // upload service config to new service
         await svc.upload(id, version);
       } else if (serviceId) {
-        svc.service.comment = argv.comment || 'uploaded by fastly-dev';
+        svc.service.comment =
+          argv.comment ||
+          getLastGitCommit() ||
+          `fastly-dev push by ${os.userInfo().username} at ${new Date().toLocaleString('en-US')}`;
 
         if (argv.dryRun) {
           console.log();

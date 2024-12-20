@@ -24,6 +24,7 @@ const DIR_SNIPPETS = 'snippets';
 const DIR_DICTIONARIES = 'dictionaries';
 
 const DIVIDER = '# ===========================================================================';
+const SUB_INDENT = '  ';
 
 export const LOG_TYPES = {
   bigqueries: { api: 'bigquery' },
@@ -90,8 +91,14 @@ function jsonStringifySorted(obj, space) {
   );
 }
 
-function removeEmptyLeadingAndTrailingLines(content) {
-  const lines = content.split('\n');
+/**
+ * Removes empty leading and trailing lines.
+ *
+ * @param {string} str multi-line string to trim
+ * @returns {string} trimmed multiline string
+ */
+function trimEmptyLines(str) {
+  const lines = str.split('\n');
 
   // remove leading empty lines
   while (lines.length > 0 && lines[0].trim().length === 0) {
@@ -103,6 +110,20 @@ function removeEmptyLeadingAndTrailingLines(content) {
   }
 
   return lines.join('\n');
+}
+
+/**
+ * Remove a prefix from each line in a multi-line string.
+ *
+ * @param {string} str multi-line string to trim
+ * @param {string} prefix line prefix to remove
+ * @returns {string} trimmed multi-line string
+ */
+function removeLinePrefix(str, prefix) {
+  return str
+    .split('\n')
+    .map((line) => (line.startsWith(prefix) ? line.slice(prefix.length) : line))
+    .join('\n');
 }
 
 function openFile(file, mode) {
@@ -427,6 +448,7 @@ export class FastlyService {
 
     this.#unsupportedCheck();
 
+    console.log();
     console.log(
       `Successfully updated service v${version}: https://manage.fastly.com/configure/services/${serviceId}`,
     );
@@ -477,7 +499,7 @@ export class FastlyService {
         const file = openFile(snippetPath, 'w');
 
         const needsSub = !['init', 'none'].includes(type);
-        const indent = needsSub ? '  ' : '';
+        const indent = needsSub ? SUB_INDENT : '';
 
         // adding context for Fastly VS Code extension or other tools
         // - backends
@@ -503,11 +525,12 @@ export class FastlyService {
         for (const snippet of subs[type]) {
           file.writeLn();
           file.writeLn(`${indent}${DIVIDER}`);
-          for (const key of ['name', 'priority', 'id']) {
+          for (const key of ['name', 'priority']) {
             file.writeLn(`${indent}# ${key}: ${snippet[key]}`);
           }
           file.writeLn(`${indent}${DIVIDER}`);
           file.writeLn();
+          snippet.content = trimEmptyLines(snippet.content);
           for (let line of snippet.content.split('\n')) {
             line = line.trimEnd();
             if (line.length === 0) {
@@ -518,6 +541,7 @@ export class FastlyService {
           }
         }
 
+        file.writeLn();
         file.writeLn(`${indent}${DIVIDER}`);
         if (needsSub) {
           file.writeLn('}');
@@ -534,7 +558,6 @@ export class FastlyService {
 
   #readSnippets() {
     this.#config.snippets = [];
-    const { snippets } = this.#config;
 
     for (const snippetPath of globSync(path.join(DIR_SNIPPETS, '*.vcl'))) {
       console.log(`- Snippet file ${snippetPath}`);
@@ -565,9 +588,14 @@ export class FastlyService {
             snippet[key] = value;
           }
         }
-        snippet.content = removeEmptyLeadingAndTrailingLines(content);
 
-        snippets.push(snippet);
+        snippet.content = trimEmptyLines(content);
+        const needsSub = !['init', 'none'].includes(type);
+        if (needsSub) {
+          snippet.content = removeLinePrefix(snippet.content, SUB_INDENT);
+        }
+
+        this.#config.snippets.push(snippet);
       }
     }
   }
@@ -593,7 +621,7 @@ export class FastlyService {
         const file = openFile(vclPath, 'w');
         file.writeLn(`# main: ${vcl.main}`);
         file.writeLn();
-        file.write(vcl.content);
+        file.write(trimEmptyLines(vcl.content));
         file.close();
 
         console.log(`- VCL ${vclPath}`);
@@ -605,7 +633,6 @@ export class FastlyService {
 
   #readVcls() {
     this.#config.vcls = [];
-    const { vcls } = this.#config;
 
     for (const vclPath of globSync(path.join(DIR_VCLS, '*.vcl'))) {
       console.log(`- VCL ${vclPath}`);
@@ -631,9 +658,9 @@ export class FastlyService {
           }
         }
       }
-      vcl.content = removeEmptyLeadingAndTrailingLines(vcl.content);
+      vcl.content = trimEmptyLines(vcl.content);
 
-      vcls.push(vcl);
+      this.#config.vcls.push(vcl);
     }
   }
 
@@ -656,10 +683,11 @@ export class FastlyService {
       const { write_only } = dict;
 
       const file = openFile(dictPath, 'w');
-      file.writeLn(`# id: ${dict.id}`);
       if (write_only) {
         file.writeLn('# write_only: true');
-        file.writeLn(`# last_updated: ${dict.info.last_updated}`);
+        if (dict.info.last_updated) {
+          file.writeLn(`# last_updated: ${dict.info.last_updated}`);
+        }
         file.writeLn(`# item_count: ${dict.info.item_count}`);
         // TODO: how to handle file with env vars from being overwritten?
         //       see below in #readDictionary()
@@ -668,7 +696,8 @@ export class FastlyService {
         //       - do not overwrite local file to keep env vars
       }
       file.writeLn();
-      for (const item of dict.items) {
+      // write items sorted by key (for stable roundtripping)
+      for (const item of dict.items.sort((a, b) => `${a.item_key}`.localeCompare(b.item_key))) {
         file.writeLn(`${item.item_key}="${item.item_value}"`);
       }
       file.close();
@@ -689,12 +718,9 @@ export class FastlyService {
     const content = fs.readFileSync(dictPath).toString();
 
     for (const line of content.split('\n')) {
-      const m = line.match(/# id: (.+)/);
-      if (m) {
-        dict.id = m[1];
-      } else if (line.startsWith('# write_only: true')) {
+      if (line.startsWith('# write_only: true')) {
         dict.write_only = true;
-      } else {
+      } else if (!line.startsWith('#')) {
         const keyValueMatch = line.match(/([^=]+)="(.*)"/);
         if (keyValueMatch) {
           dict.items.push({

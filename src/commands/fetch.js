@@ -24,22 +24,30 @@ export default {
 
     yargs.positional('service-id', SHARED_ARGS.serviceId);
 
-    yargs.options({
-      secretsMode: {
-        type: 'string',
-        describe: 'How to handle secrets: replace (default) or warn',
-        default: 'replace',
-      },
-    });
+    yargs
+      .options({
+        version: {
+          alias: 'v',
+          type: 'string',
+          describe:
+            'Service version to fetch. Default is latest version. Use "active" for the active version.',
+        },
+      })
+      .options({
+        secretsMode: {
+          type: 'string',
+          describe: 'How to handle secrets: replace (default) or warn',
+          default: 'replace',
+        },
+      });
   },
   handler: async (argv) => {
     const storedServiceId = global.config.env?.production?.service_id;
 
     if (argv.serviceId && storedServiceId && argv.serviceId !== storedServiceId) {
-      console.error(
-        `Error: Service ID mismatch. Found ${storedServiceId} in fastly-dev.yaml, but provided ${argv.serviceId} as argument.`,
+      console.warn(
+        `Note: Pulling from a different non-production service id. Production is ${storedServiceId} according to fastly-dev.yaml.`,
       );
-      process.exit(1);
     }
     if (!(argv.serviceId || storedServiceId)) {
       console.error(
@@ -48,11 +56,11 @@ export default {
       process.exit(1);
     }
 
-    const serviceId = storedServiceId || argv.serviceId;
+    const serviceId = argv.serviceId || storedServiceId;
 
     const svc = new FastlyService(argv.apiToken, argv.secretsMode);
     try {
-      await svc.download(serviceId);
+      await svc.download(serviceId, argv.version);
 
       if (argv.dryRun) {
         console.log();
@@ -63,7 +71,7 @@ export default {
       svc.write();
 
       // update config file with service id
-      if (serviceId !== storedServiceId) {
+      if (!storedServiceId) {
         global.config.set('env.production.service_id', serviceId).write();
         console.log(`Updated ${global.config.file()} with service id for production.`);
       }

@@ -130,8 +130,8 @@ class Fastly {
     return versionId;
   }
 
-  async serviceDetails(serviceId) {
-    const resp = await this.fetch(`GET /service/${serviceId}/details`);
+  async serviceDetails(serviceId, versionId) {
+    const resp = await this.fetch(`GET /service/${serviceId}/details${versionId ? `?version=${versionId}` : ''}`);
     if (!resp.ok) {
       throw new Error(`Failed to retrieve details of service ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }

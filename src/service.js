@@ -211,19 +211,25 @@ export class FastlyService {
    * Download the active service configuration from Fastly.
    *
    * @param {string} serviceId Fastly service id
+   * @param {string} version Fastly service version. Optional, defaults to latest version. Can also use 'active' to fetch active version.
    */
-  async download(serviceId) {
+  async download(serviceId, version) {
     if (this.#config) {
       throw new Error('Service already loaded.');
     }
 
-    console.log(`Fetching service ${serviceId}...`);
+    console.log(
+      `Fetching service ${serviceId} at ${version === undefined ? 'latest version' : version === 'active' ? 'active version' : `version ${version}`}...`,
+    );
 
     const fastly = this.#fastly;
 
     try {
-      const details = await fastly.serviceDetails(serviceId);
-      const config = { ...(details.active_version || details.version) };
+      const details = await fastly.serviceDetails(
+        serviceId,
+        version === 'active' ? undefined : version,
+      );
+      const config = { ...(version === 'active' ? details.active_version : details.version) };
       this.#config = config;
       config.version = config.number;
       config.name = details.name;
@@ -235,7 +241,9 @@ export class FastlyService {
         );
       }
 
-      console.log(`- Active version ${config.version}`);
+      console.log(
+        `- Version ${config.version} (active ${details.active_version?.number}, latest ${details.versions.at(-1).number})`,
+      );
 
       // load acl entries
       console.log('- Loading ACLs...');

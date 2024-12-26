@@ -48,7 +48,6 @@ function adjustServiceForEnvironment(fastlyService, env) {
   }
 
   // TODO: replace domain in VCL snippets? service name? logging?
-  // TODO: option to have different dictionaries for different environments
 }
 
 function getLastGitCommit() {
@@ -67,7 +66,7 @@ export default {
     yargs
       .usage('$0 push')
       .usage('')
-      .usage('Push service config from current folder to Fastly.');
+      .usage('Push service configuration from current folder to Fastly.');
 
     // biome-ignore format: normal yargs style
     yargs
@@ -136,7 +135,7 @@ export default {
           console.log();
           console.log('Dry run. Not making changes. Would do:');
           console.log(` - Create service '${name}' with comment '${serviceCommment}'`);
-          console.log(' - Upload service config to version 1 of that new service');
+          console.log(' - Upload service configuration to version 1 of new service');
           return;
         }
 
@@ -160,11 +159,11 @@ export default {
           console.log();
           console.log('Dry run. Not making changes. Would otherwise:');
           if (argv.version) {
-            console.log(` - Upload service config to version ${argv.version}`);
+            console.log(` - Upload service configuration to version ${argv.version}`);
           } else {
             const newVersion = (await svc.fastly.latestVersion(serviceId)) + 1;
             console.log(` - Create empty new version ${newVersion} of service ${serviceId}`);
-            console.log(` - Upload service config to version ${newVersion}`);
+            console.log(` - Upload service configuration to version ${newVersion}`);
           }
           console.log(` - Set comment: '${svc.service.comment}'`);
           return;

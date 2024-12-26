@@ -30,7 +30,7 @@ export class Config {
       return new Config(file, doc);
     }
 
-    console.warn(`Warning: Config file not found: ${file}`);
+    console.warn(`Warning: Configuration file not found: ${file}`);
     return new Config(file, new yaml.Document({}));
   }
 

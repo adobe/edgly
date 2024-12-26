@@ -20,7 +20,7 @@ export default {
     yargs
       .usage('$0 fetch [service-id]')
       .usage('')
-      .usage('Fetch service config from Fastly and write to current folder.');
+      .usage('Fetch service configuration from Fastly and write to current folder.');
 
     yargs.positional('service-id', SHARED_ARGS.serviceId);
 
@@ -30,7 +30,7 @@ export default {
           alias: 'v',
           type: 'string',
           describe:
-            'Service version to fetch. Default is latest version. Use "active" for the active version.',
+            'Service version to fetch. Default is latest version.   Use "active" for the active version.',
         },
       })
       .options({
@@ -64,7 +64,7 @@ export default {
 
       if (argv.dryRun) {
         console.log();
-        console.log('Dry run. Not writing service config to disk.');
+        console.log('Dry run. Not writing service configuration to disk.');
         return;
       }
 

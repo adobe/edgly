@@ -24,7 +24,7 @@ export const GLOBAL_OPTS = {
     alias: 'c',
     type: 'string',
     default: 'fastly-dev.yaml',
-    describe: 'Config file (YAML)',
+    describe: 'Configuration file',
     coerce: (file) => {
       global.config = Config.read(file);
       return global.config;
@@ -33,7 +33,7 @@ export const GLOBAL_OPTS = {
   dryRun: {
     alias: 'd',
     type: 'boolean',
-    describe: 'Do not write to disk or make changes in Fastly',
+    describe: 'Do not make any actual changes',
   },
 };
 

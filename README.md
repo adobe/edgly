@@ -13,7 +13,7 @@ npm install -g @adobe/fastly-dev
 
 ## Usage
 
-TODO: this is work in progress
+TODO this is work in progress
 
 ### Services
 

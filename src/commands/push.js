@@ -161,7 +161,7 @@ export default {
           if (argv.version) {
             console.log(` - Upload service configuration to version ${argv.version}`);
           } else {
-            const newVersion = (await svc.fastly.latestVersion(serviceId)) + 1;
+            const newVersion = await svc.nextVersion(serviceId);
             console.log(` - Create empty new version ${newVersion} of service ${serviceId}`);
             console.log(` - Upload service configuration to version ${newVersion}`);
           }
@@ -170,6 +170,8 @@ export default {
         }
 
         const version = argv.version || (await svc.newVersion(serviceId));
+
+        console.log(`New version: ${version}`);
 
         // update existing service id with config
         await svc.upload(serviceId, version);

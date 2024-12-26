@@ -178,10 +178,6 @@ export class FastlyService {
     return this.#config?.service_id;
   }
 
-  get fastly() {
-    return this.#fastly;
-  }
-
   async dispose() {
     await this.#fastly.dispose();
   }
@@ -331,6 +327,10 @@ export class FastlyService {
     // create fresh new version so we can safely
     // upload any possible changes without conflicts
     return await this.#fastly.createVersion(serviceId);
+  }
+
+  async nextVersion(serviceId) {
+    return (await this.#fastly.latestVersion(serviceId)) + 1;
   }
 
   /**

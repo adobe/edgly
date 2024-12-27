@@ -10,6 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
+/**
+ * This is a micro lib to improve the yargs cli library.
+ */
+
 import { statSync } from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
@@ -126,6 +130,16 @@ function handleAdditionalTypes(_yargs, opt) {
 
 /**
  * An improved yargs.
+ *
+ * Usage:
+ * ```js
+ * import yargsAhoy from './yargs-ahoy.js';
+ *
+ * const yargs = yargsAhoy();
+ * await yargs
+ *   .options(..)
+ *   .run();
+ * ```
  */
 // biome-ignore lint/style/noDefaultExport: we mimic yargs here
 export default function yargsAhoy(processArgs, cwd, parentRequire) {

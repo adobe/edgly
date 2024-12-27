@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import { FastlyService } from '../fastly/service.js';
 import { SHARED_ARGS } from '../opts.js';
-import { FastlyService } from '../service.js';
 
 export default {
   command: 'fetch [service-id]',

@@ -13,8 +13,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { globSync } from 'glob';
+import { detectSecrets, replaceSecretVars } from '../secrets/secrets.js';
 import { Fastly } from './fastly.js';
-import { detectSecrets, replaceSecretVars } from './secrets/secrets.js';
 
 export const FILE_SERVICE = 'service.json';
 const FILE_ACL = 'acl.json';

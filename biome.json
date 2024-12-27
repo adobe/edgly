@@ -34,7 +34,7 @@
     "globals": ["os"]
   },
   "files": {
-    "ignore": ["src/fastly.js"]
+    "ignore": ["src/fastly/fastly.js"]
   },
   "overrides": [
     {
@@ -54,7 +54,7 @@
       }
     },
     {
-      "include": ["src/service.js"],
+      "include": ["src/fastly/service.js"],
       "linter": {
         "rules": {
           "style": {

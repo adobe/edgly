@@ -12,8 +12,8 @@
 
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
+import { FastlyService } from '../fastly/service.js';
 import { SHARED_OPTS } from '../opts.js';
-import { FastlyService } from '../service.js';
 
 function adjustServiceForEnvironment(fastlyService, env) {
   const { service } = fastlyService;

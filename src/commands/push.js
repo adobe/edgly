@@ -103,17 +103,11 @@ export default {
     const serviceId = global.config.env?.[env]?.service_id;
 
     if (create && serviceId) {
-      console.error(
-        `Error: Cannot create new service. Existing service ID found for env '${env}': ${serviceId}.`,
-      );
-      console.error(
-        `       To force create a new service, remove env.${env}.service_id in fastly-dev.yaml.`,
-      );
+      console.error(`Error: Cannot create new service. Existing service ID found for env '${env}': ${serviceId}.`);
+      console.error(`       To force create a new service, remove env.${env}.service_id in fastly-dev.yaml.`);
       process.exit(1);
     } else if (!(create || serviceId)) {
-      console.error(
-        `Error: No service ID for '${env}' found in env.${env}.service_id in fastly-dev.yaml.`,
-      );
+      console.error(`Error: No service ID for '${env}' found in env.${env}.service_id in fastly-dev.yaml.`);
       console.error('       To create a new service add the --create option.');
       process.exit(1);
     }

@@ -29,8 +29,7 @@ export default {
         version: {
           alias: 'v',
           type: 'string',
-          describe:
-            'Service version to fetch. Default is latest version.   Use "active" for the active version.',
+          describe: 'Service version to fetch. Default is latest version.   Use "active" for the active version.',
         },
       })
       .options({

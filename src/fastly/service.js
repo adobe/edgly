@@ -186,10 +186,7 @@ export class FastlyService {
     const unsupported = [];
     for (const key of Object.keys(this.#config)) {
       const value = this.#config[key];
-      if (
-        (Array.isArray(value) && value.length > 0) ||
-        (typeof value === 'object' && Object.keys(value).length > 0)
-      ) {
+      if ((Array.isArray(value) && value.length > 0) || (typeof value === 'object' && Object.keys(value).length > 0)) {
         if (!SUPPORTED_FEATURES.includes(key)) {
           unsupported.push(key);
         }
@@ -221,10 +218,7 @@ export class FastlyService {
     const fastly = this.#fastly;
 
     try {
-      const details = await fastly.serviceDetails(
-        serviceId,
-        version === 'active' ? undefined : version,
-      );
+      const details = await fastly.serviceDetails(serviceId, version === 'active' ? undefined : version);
       const config = { ...(version === 'active' ? details.active_version : details.version) };
       this.#config = config;
       config.version = config.number;
@@ -232,9 +226,7 @@ export class FastlyService {
       config.type = details.type;
 
       if (config.type !== 'vcl') {
-        console.warn(
-          `Warning: Service type is ${config.type}. This tool is only tested with 'vcl' services.`,
-        );
+        console.warn(`Warning: Service type is ${config.type}. This tool is only tested with 'vcl' services.`);
       }
 
       console.log(
@@ -457,10 +449,10 @@ export class FastlyService {
     this.#unsupportedCheck();
 
     console.log();
-    console.log(
-      `Successfully updated service v${version}: https://manage.fastly.com/configure/services/${serviceId}`,
-    );
+    console.log(`Successfully updated service v${version}: https://manage.fastly.com/configure/services/${serviceId}`);
   }
+
+  // FS OPS ========================================================================================================
 
   #writeAcls() {
     const { acls } = this.#config;

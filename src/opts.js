@@ -69,9 +69,8 @@ export const SHARED_OPTS = {
       describe: 'Environment',
     },
   },
-  serviceId: {
-    'service-id': {
-      alias: 's',
+  id: {
+    id: {
       type: 'string',
       describe: 'Fastly service ID',
     },

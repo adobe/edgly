@@ -44,7 +44,7 @@ export default {
         describe: 'Environment to update',
         default: 'production',
       }))
-      .options(SHARED_OPTS.serviceId)
+      .options(SHARED_OPTS.id)
       .options(override(SHARED_OPTS.version,{
         describe: 'Service version to overwrite (must exist)',
       }))
@@ -63,16 +63,16 @@ export default {
   handler: async (argv) => {
     const { env } = argv;
 
-    let serviceId;
+    let id;
 
-    if (argv.serviceId) {
+    if (argv.id) {
       // explicitly provided service id takes precedence
-      serviceId = argv.serviceId;
+      id = argv.id;
     } else {
       // lookup service id from environment in configuration file
-      serviceId = global.config.env?.[env]?.service_id;
+      id = global.config.env?.[env]?.id;
 
-      if (!serviceId) {
+      if (!id) {
         console.error(`Error: No service ID found for environment '${env}' in configuration file.`);
         console.error("       Use 'fastly-dev service create' to create a new service or environment.");
         process.exit(1);
@@ -95,15 +95,15 @@ export default {
       if (argv.version) {
         console.log(` - Update existing service version ${argv.version}`);
       } else {
-        const newVersion = await mgr.getNextVersion(serviceId);
-        console.log(` - Create new version ${newVersion} of service ${serviceId}`);
+        const newVersion = await mgr.getNextVersion(id);
+        console.log(` - Create new version ${newVersion} of service ${id}`);
       }
       console.log(` - Set comment: '${service.comment}'`);
       return;
     }
 
     await mgr.updateServiceVersion({
-      serviceId,
+      id,
       service,
       version: argv.version,
       activate: argv.activate,

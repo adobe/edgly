@@ -74,17 +74,17 @@ export class FastlyServiceManager {
   /**
    * Retrieve a service configuration from Fastly.
    *
-   * @param {string} serviceId Fastly service id
+   * @param {string} id Fastly service id
    * @param {string} version Fastly service version. Optional, defaults to latest version. Can also use 'active' to fetch active version.
    */
-  async getService(serviceId, version) {
+  async getService(id, version) {
     const versionType =
       version === undefined ? 'latest version' : version === 'active' ? 'active version' : `version ${version}`;
-    console.debug(`Fetching service ${serviceId} at ${versionType}...`);
+    console.debug(`Fetching service ${id} at ${versionType}...`);
 
     const fastly = this.#fastly;
 
-    const details = await fastly.serviceDetails(serviceId, version === 'active' ? undefined : version);
+    const details = await fastly.serviceDetails(id, version === 'active' ? undefined : version);
     const service = { ...(version === 'active' ? details.active_version : details.version) };
     service.version = service.number;
     service.name = details.name;
@@ -102,24 +102,24 @@ export class FastlyServiceManager {
     // load acl entries
     console.debug('- Loading ACLs...');
     for (const acl of service.acls) {
-      const { id } = acl;
-      acl.entries = await fastly.aclEntries(serviceId, id);
+      const { id: aclId } = acl;
+      acl.entries = await fastly.aclEntries(id, aclId);
     }
 
     // load dictionary items
     console.debug('- Loading dictionaries...');
     for (const dict of service.dictionaries) {
-      const { id, write_only } = dict;
-      dict.info = await fastly.dictionaryInfo(serviceId, service.version, id);
+      const { id: dictId, write_only } = dict;
+      dict.info = await fastly.dictionaryInfo(id, service.version, dictId);
       if (write_only) {
         dict.items = [];
       } else {
-        dict.items = await fastly.dictionaryItems(serviceId, id);
+        dict.items = await fastly.dictionaryItems(id, dictId);
       }
     }
 
     // load products
-    service.products = await fastly.enabledProducts(serviceId);
+    service.products = await fastly.enabledProducts(id);
 
     // remove noisy and undesired fields
     for (const key in service) {
@@ -173,17 +173,17 @@ export class FastlyServiceManager {
    * Update existing Fastly service with new configuration.
    * Add new version or update an existing version.
    *
-   * @param {Object} opts with serviceId, service, version, activate
+   * @param {Object} opts with id, service, version, activate
    * @returns {String} actual version updated
    */
   async updateServiceVersion(opts) {
-    const { serviceId, service } = opts;
+    const { id, service } = opts;
 
     let updatedVersion;
 
     if (opts.version) {
       // update existing service version with config
-      await this.#updateServiceVersion(serviceId, opts.version, service);
+      await this.#updateServiceVersion(id, opts.version, service);
 
       console.debug(`\nSuccessfully updated version ${opts.version}:`);
 
@@ -191,13 +191,13 @@ export class FastlyServiceManager {
     } else {
       // create fresh new version so we can safely
       // upload any possible changes without conflicts
-      console.debug(`Creating empty new version for Fastly service ${serviceId}...`);
+      console.debug(`Creating empty new version for Fastly service ${id}...`);
 
-      const newVersion = await this.#fastly.createVersion(serviceId);
+      const newVersion = await this.#fastly.createVersion(id);
       console.debug(`\n- New service version: ${newVersion}`);
 
       // fill in new servic version with config
-      await this.#updateServiceVersion(serviceId, newVersion, service);
+      await this.#updateServiceVersion(id, newVersion, service);
 
       console.debug(`\nSuccessfully created new version ${newVersion}:`);
 
@@ -207,41 +207,41 @@ export class FastlyServiceManager {
     if (opts.activate) {
       console.debug(`\nActivating version ${updatedVersion}...`);
 
-      await this.#fastly.activateVersion(serviceId, updatedVersion);
+      await this.#fastly.activateVersion(id, updatedVersion);
 
       console.debug(`\nSuccessfully activated version ${updatedVersion}`);
     }
 
-    console.log(`https://manage.fastly.com/configure/services/${serviceId}/versions/${updatedVersion}`);
+    console.log(`https://manage.fastly.com/configure/services/${id}/versions/${updatedVersion}`);
   }
 
   /**
    * Get the next version number for a Fastly service.
-   * @param {String} serviceId service to get the next version for
+   * @param {String} id service id to get the next version for
    * @returns next version number
    */
-  async getNextVersion(serviceId) {
-    return (await this.#fastly.latestVersion(serviceId)) + 1;
+  async getNextVersion(id) {
+    return (await this.#fastly.latestVersion(id)) + 1;
   }
 
   /**
    * Upload service configuration to a Fastly service at a given version
    *
-   * @param {string} serviceId Fastly service id
+   * @param {string} id Fastly service id
    * @param {number} version Fastly service version
    * @param {FastlyService} service Fastly service configuration
    */
-  async #updateServiceVersion(serviceId, version, service) {
+  async #updateServiceVersion(id, version, service) {
     const fastly = this.#fastly;
 
     console.debug();
-    console.debug(`Updating Fastly service ${serviceId} at version ${version}...`);
+    console.debug(`Updating Fastly service ${id} at version ${version}...`);
 
-    service.service_id = serviceId;
+    service.service_id = id;
 
     if (service.comment) {
       console.debug(`- Setting version comment: ${service.comment}`);
-      await fastly.updateVersion(serviceId, version, {
+      await fastly.updateVersion(id, version, {
         comment: service.comment,
       });
     }
@@ -250,35 +250,35 @@ export class FastlyServiceManager {
     console.debug('- Setting domains');
     for (const { name, comment } of service.domains) {
       console.debug(`  ${name}`);
-      await fastly.addDomain(serviceId, version, name, comment);
+      await fastly.addDomain(id, version, name, comment);
     }
 
     // create conditions
     console.debug('- Setting conditions');
     for (const condition of service.conditions) {
       console.debug(`  ${condition.name}`);
-      await fastly.createCondition(serviceId, version, condition);
+      await fastly.createCondition(id, version, condition);
     }
 
     // create headers
     console.debug('- Setting headers');
     for (const header of service.headers) {
       console.debug(`  ${header.name}`);
-      await fastly.createHeader(serviceId, version, header);
+      await fastly.createHeader(id, version, header);
     }
 
     // create backends
     console.debug('- Setting backends');
     for (const backend of service.backends) {
       console.debug(`  ${backend.name}: ${backend.address}`);
-      await fastly.createBackend(serviceId, version, backend);
+      await fastly.createBackend(id, version, backend);
     }
 
     // create and populate ACLs
     console.debug('- Setting ACLs');
     for (const { name, entries } of service.acls) {
       console.debug(`  ${name}`);
-      await fastly.updateAcl(serviceId, version, name, entries);
+      await fastly.updateAcl(id, version, name, entries);
     }
 
     // create and populate dictionaries
@@ -290,38 +290,38 @@ export class FastlyServiceManager {
         target[item_key] = item_value;
         return target;
       }, {});
-      await fastly.updateDict(serviceId, version, name, entries, write_only);
+      await fastly.updateDict(id, version, name, entries, write_only);
     }
 
     // create snippets
     console.debug('- Setting VCL snippets');
     for (const snippet of service.snippets) {
       console.debug(`  ${snippet.name}`);
-      await fastly.createSnippet(serviceId, version, snippet);
+      await fastly.createSnippet(id, version, snippet);
     }
 
     // create vcls
     console.debug('- Setting VCL files');
     for (const vcl of service.vcls) {
       console.debug(`  ${vcl.name}`);
-      await fastly.createVcl(serviceId, version, vcl.name, vcl.content, vcl.main);
+      await fastly.createVcl(id, version, vcl.name, vcl.content, vcl.main);
     }
 
     // update request settings
     console.debug('- Setting request settings');
     for (const rs of service.request_settings) {
       console.debug(`  ${rs.name}`);
-      await fastly.addRequestSetting(serviceId, version, rs);
+      await fastly.addRequestSetting(id, version, rs);
     }
 
     // update general settings
     console.debug('- Setting service settings');
-    await fastly.updateSettings(serviceId, version, service.settings);
+    await fastly.updateSettings(id, version, service.settings);
 
     // image optimizer settings
     if (service.io_settings?.length > 0) {
       console.debug('- Setting image optimizer settings');
-      await fastly.updateImageOptimizerSettings(serviceId, version, service.io_settings[0]);
+      await fastly.updateImageOptimizerSettings(id, version, service.io_settings[0]);
     }
 
     // loggers
@@ -333,7 +333,7 @@ export class FastlyServiceManager {
         for (const logConfig of service[type]) {
           console.debug(`  ${api}: ${logConfig.name}`);
 
-          await fastly.addLogEndpoint(serviceId, version, api, logConfig.name, logConfig);
+          await fastly.addLogEndpoint(id, version, api, logConfig.name, logConfig);
         }
       }
     }

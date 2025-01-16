@@ -44,20 +44,20 @@ export default {
 
     const service = readService(env);
 
-    const serviceId = global.config.env?.[env]?.service_id;
+    const id = global.config.env?.[env]?.id;
 
     const mgr = new FastlyServiceManager(argv.apiToken);
 
-    if (serviceId) {
+    if (id) {
       console.error(`Error: Cannot create new service for environment '${env}'.`);
-      console.error(`       Existing service ID found for '${env}': ${serviceId}.`);
+      console.error(`       Existing service ID found for '${env}': ${id}.`);
       console.error('       To resolve, choose a different environment with --env');
-      console.error(`       or remove env.${env}.service_id in config file.`);
+      console.error(`       or remove env.${env}.id in config file.`);
       process.exit(1);
     }
 
     const name = argv.name || `${service.name} (${env})`;
-    const comment = `Created by fastly-dev. Copy of ${service.id}`;
+    const comment = `Created by fastly-dev. Copy of ${service.service_id}`;
 
     if (argv.dryRun) {
       console.log('\nDry run. Not making changes. Would otherwise:');
@@ -69,14 +69,14 @@ export default {
     // set initial version comment
     service.comment = `Initial version, copy of ${service.service_id} at version ${service.version}`;
 
-    const id = await mgr.createService({
+    const newId = await mgr.createService({
       name,
       comment,
       service,
     });
 
     // update config file with new service id for environment
-    global.config.set(`env.${env}.service_id`, id).write();
+    global.config.set(`env.${env}.id`, newId).write();
     console.debug(`\nUpdated ${global.config.file()} with service id for ${env}.`);
   },
 };

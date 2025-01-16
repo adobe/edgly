@@ -31,7 +31,7 @@ export default {
           describe: 'Environment to pull from',
         }),
       )
-      .options(SHARED_OPTS.serviceId)
+      .options(SHARED_OPTS.id)
       .options(
         override(SHARED_OPTS.version, {
           describe: 'Service version to retrieve. Defaults to latest version.  Use "active" for the active version.',
@@ -40,34 +40,34 @@ export default {
       .options(SHARED_OPTS.secretsMode);
   },
   handler: async (argv) => {
-    let serviceId;
+    let id;
 
-    if (argv.serviceId) {
+    if (argv.id) {
       // explicitly provided service id takes precedence
       if (argv.env) {
         console.warn('Warning: Ignoring --env when service ID is provided.');
       } else {
-        const prodServiceId = global.config.env?.production?.service_id;
-        if (prodServiceId && serviceId !== prodServiceId) {
+        const prodId = global.config.env?.production?.id;
+        if (prodId && id !== prodId) {
           console.warn('Warning: Pulling from a different non-production service id.');
-          console.warn(`         Production is ${prodServiceId} (set in configuration).`);
+          console.warn(`         Production is ${prodId} (set in configuration).`);
         }
       }
-      serviceId = argv.serviceId;
+      id = argv.id;
     } else {
       const env = argv.env || 'production';
 
       // lookup service id from environment in configuration file
-      serviceId = global.config.env?.[env]?.service_id;
+      id = global.config.env?.[env]?.id;
 
-      if (!serviceId) {
+      if (!id) {
         console.error(`Error: No service ID found for environment '${env}' in configuration file.`);
         process.exit(1);
       }
     }
 
     const mgr = new FastlyServiceManager(argv.apiToken);
-    const service = await mgr.getService(serviceId, argv.version);
+    const service = await mgr.getService(id, argv.version);
 
     detectSecrets(service, argv.secretsMode);
 

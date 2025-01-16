@@ -23,14 +23,16 @@ export class Config {
     this.#doc = doc;
   }
 
-  static read(file) {
+  static read(file, isDefault = false) {
     if (fs.existsSync(file)) {
       const content = fs.readFileSync(file, 'utf8');
       const doc = yaml.parseDocument(content);
       return new Config(file, doc);
     }
 
-    console.warn(`Warning: Configuration file not found: ${file}`);
+    if (!isDefault) {
+      console.warn(`Warning: Configuration file not found: ${file}`);
+    }
     return new Config(file, new yaml.Document({}));
   }
 

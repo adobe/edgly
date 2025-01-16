@@ -33,9 +33,6 @@
     },
     "globals": ["os"]
   },
-  "files": {
-    "ignore": ["src/fastly/fastly.js"]
-  },
   "overrides": [
     {
       "include": ["test/**/*.js"],

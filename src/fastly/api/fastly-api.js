@@ -10,19 +10,27 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable no-console */
-/* eslint-disable camelcase */
-
 import { fetch, reset } from '@adobe/fetch';
 import { FormData } from 'formdata-node';
 
-const removeProperties = (obj, toRemove) => Object.keys(obj)
-  .filter((key) => !toRemove.includes(key))
-  .reduce((target, key) => {
-    // eslint-disable-next-line no-param-reassign
-    target[key] = obj[key];
-    return target;
-  }, {});
+const PRODUCTS = [
+  'brotli_compression',
+  'domain_inspector',
+  'fanout',
+  'image_optimizer',
+  'origin_inspector',
+  'websockets',
+  'bot_management',
+  'ngwaf',
+];
+
+const removeProperties = (obj, toRemove) =>
+  Object.keys(obj)
+    .filter((key) => !toRemove.includes(key))
+    .reduce((target, key) => {
+      target[key] = obj[key];
+      return target;
+    }, {});
 
 function removeEmptyStrings(properties, toRemove) {
   const result = {};
@@ -44,31 +52,27 @@ function toFormData(properties) {
         body.append(key, String(properties[key]));
       }
     }
-  };
+  }
   return body;
 }
 
-class Fastly {
+export class FastlyApi {
   constructor(authToken) {
     this.authToken = authToken;
     this.endpoint = 'https://api.fastly.com';
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async dispose() {
-    return reset();
+    return await reset();
   }
 
   fetch(url, options) {
     const [method, path] = url.split(' ', 2);
-    return fetch(
-      `${this.endpoint}${path}`,
-      {
-        method,
-        headers: { 'Fastly-Key': this.authToken },
-        ...options,
-      }
-    );
+    return fetch(`${this.endpoint}${path}`, {
+      method,
+      headers: { 'Fastly-Key': this.authToken },
+      ...options,
+    });
   }
 
   async latestVersion(serviceId) {
@@ -77,9 +81,7 @@ class Fastly {
     if (!resp.ok) {
       throw new Error(`Failed to determine latest version of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
-    return (await resp.json())
-      .map(({ number }) => number)
-      .pop();
+    return (await resp.json()).map(({ number }) => number).pop();
   }
 
   async activeVersion(serviceId) {
@@ -95,7 +97,7 @@ class Fastly {
   }
 
   async createVersion(serviceId) {
-    let resp = await this.fetch(`POST /service/${serviceId}/version`);
+    const resp = await this.fetch(`POST /service/${serviceId}/version`);
     if (!resp.ok) {
       throw new Error(`Failed to create version: ${resp.status} - ${await resp.text()}`);
     }
@@ -104,7 +106,7 @@ class Fastly {
   }
 
   async cloneVersion(serviceId, versionId) {
-    let resp = await this.fetch(`PUT /service/${serviceId}/version/${versionId}/clone`);
+    const resp = await this.fetch(`PUT /service/${serviceId}/version/${versionId}/clone`);
     if (!resp.ok) {
       throw new Error(`Failed to clone version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
@@ -120,14 +122,23 @@ class Fastly {
     if (!resp.ok) {
       throw new Error(`Failed to update version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
-}
+    return resp.json();
+  }
 
   async activateVersion(serviceId, versionId) {
     const resp = await this.fetch(`PUT /service/${serviceId}/version/${versionId}/activate`);
     if (!resp.ok) {
       throw new Error(`Failed to activate version ${versionId}: ${resp.status} - ${await resp.text()}`);
     }
-    return versionId;
+    return resp.json();
+  }
+
+  async deactivateVersion(serviceId, versionId) {
+    const resp = await this.fetch(`PUT /service/${serviceId}/version/${versionId}/deactivate`);
+    if (!resp.ok) {
+      throw new Error(`Failed to deactivate version ${versionId}: ${resp.status} - ${await resp.text()}`);
+    }
+    return resp.json();
   }
 
   async serviceDetails(serviceId, versionId) {
@@ -141,44 +152,66 @@ class Fastly {
   async backends(serviceId, versionId) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/backend`);
     if (!resp.ok) {
-      throw new Error(`Failed to list backends of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to list backends of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
-    return (await resp.json())
-      .map((backend) => removeProperties(backend, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version', 'client_cert', 'locked']));
+    return (await resp.json()).map((backend) =>
+      removeProperties(backend, [
+        'created_at',
+        'deleted_at',
+        'updated_at',
+        'service_id',
+        'version',
+        'client_cert',
+        'locked',
+      ]),
+    );
   }
 
   async acls(serviceId, versionId) {
     // get ACL
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/acl`);
     if (!resp.ok) {
-      throw new Error(`Failed to list ACLs of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to list ACLs of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
-    return (await resp.json())
-      .map((domain) => removeProperties(domain, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']));
+    return (await resp.json()).map((domain) =>
+      removeProperties(domain, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']),
+    );
   }
 
   async domains(serviceId, versionId) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/domain`);
     if (!resp.ok) {
-      throw new Error(`Failed to list domains of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to list domains of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
-    return (await resp.json())
-      .map((domain) => removeProperties(domain, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']));
+    return (await resp.json()).map((domain) =>
+      removeProperties(domain, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']),
+    );
   }
 
   async conditions(serviceId, versionId) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/condition`);
     if (!resp.ok) {
-      throw new Error(`Failed to list conditions of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to list conditions of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
-    return (await resp.json())
-      .map((condition) => removeProperties(condition, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']));
+    return (await resp.json()).map((condition) =>
+      removeProperties(condition, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']),
+    );
   }
 
   async dictionary(serviceId, versionId, dictName) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary/${dictName}`);
     if (!resp.ok) {
-      throw new Error(`Failed to get dictionary ${dictName} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to get dictionary ${dictName} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     const dict = await resp.json();
     return removeProperties(dict, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']);
@@ -187,7 +220,9 @@ class Fastly {
   async dictionaryInfo(serviceId, versionId, dictionaryId) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary/${dictionaryId}/info`);
     if (!resp.ok) {
-      throw new Error(`Failed to get dictionary info for ${dictionaryId} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to get dictionary info for ${dictionaryId} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     const dict = await resp.json();
     return removeProperties(dict, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']);
@@ -196,10 +231,13 @@ class Fastly {
   async dictionaries(serviceId, versionId) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/dictionary`);
     if (!resp.ok) {
-      throw new Error(`Failed to list dictionaries of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to list dictionaries of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
-    return (await resp.json())
-      .map((dict) => removeProperties(dict, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']));
+    return (await resp.json()).map((dict) =>
+      removeProperties(dict, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'version']),
+    );
   }
 
   async aclEntries(serviceId, aclId) {
@@ -207,20 +245,26 @@ class Fastly {
     if (!resp.ok) {
       throw new Error(`Failed to list entries of ACL ${aclId} of ${serviceId}: ${resp.status} - ${await resp.text()}`);
     }
-    return (await resp.json())
-      .map((entry) => removeProperties(entry, ['created_at', 'updated_at', 'service_id', 'acl_id']));
+    return (await resp.json()).map((entry) =>
+      removeProperties(entry, ['created_at', 'updated_at', 'service_id', 'acl_id']),
+    );
   }
 
   async dictionaryItems(serviceId, dictionaryId, pageSize = 1000, page = 1) {
-    const resp = await this.fetch(`GET /service/${serviceId}/dictionary/${dictionaryId}/items?per_page=${pageSize}&page=${page}`);
+    const resp = await this.fetch(
+      `GET /service/${serviceId}/dictionary/${dictionaryId}/items?per_page=${pageSize}&page=${page}`,
+    );
     if (!resp.ok) {
-      throw new Error(`Failed to list items of dictionary ${dictionaryId} of ${serviceId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to list items of dictionary ${dictionaryId} of ${serviceId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
-    return (await resp.json())
-      .map((entry) => removeProperties(entry, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'dictionary_id']));
+    return (await resp.json()).map((entry) =>
+      removeProperties(entry, ['created_at', 'deleted_at', 'updated_at', 'service_id', 'dictionary_id']),
+    );
   }
 
-  async generatedVCL(serviceId, versionId) {
+  async generatedVcl(serviceId, versionId) {
     const resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/generated_vcl`);
     if (!resp.ok) {
       throw new Error(`Failed to get generated VCL of ${serviceId}: ${resp.status} - ${await resp.text()}`);
@@ -235,6 +279,7 @@ class Fastly {
       // create dict
       const body = toFormData({
         name: dictName,
+        // biome-ignore lint/style/useNamingConvention: fastly json naming
         write_only: String(writeOnly),
       });
       resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/dictionary`, { body });
@@ -244,14 +289,13 @@ class Fastly {
     }
     const { id } = await resp.json();
 
+    // biome-ignore lint/style/useNamingConvention: fastly json naming
     const items = Object.entries(entries).map(([key, value]) => ({ op: 'upsert', item_key: key, item_value: value }));
 
-    while (items.length) {
+    while (items.length > 0) {
       const body = { items: items.splice(0, batchSize) };
-      // eslint-disable-next-line no-await-in-loop
       resp = await this.fetch(`PATCH /service/${serviceId}/dictionary/${id}/items`, { body });
       if (!resp.ok) {
-        // eslint-disable-next-line no-await-in-loop
         throw new Error(`Failed to patch dictionary '${dictName}': ${resp.status} - ${await resp.text()}`);
       }
     }
@@ -268,12 +312,10 @@ class Fastly {
 
     const items = entries.map(({ item_key }) => ({ op: 'delete', item_key }));
 
-    while (items.length) {
+    while (items.length > 0) {
       const body = { items: items.splice(0, batchSize) };
-      // eslint-disable-next-line no-await-in-loop
       resp = await this.fetch(`PATCH /service/${serviceId}/dictionary/${id}/items`, { body });
       if (!resp.ok) {
-        // eslint-disable-next-line no-await-in-loop
         throw new Error(`Failed to patch dictionary '${dictName}': ${resp.status} - ${await resp.text()}`);
       }
     }
@@ -281,7 +323,7 @@ class Fastly {
 
   async createService(name, type = 'vcl', comment = '') {
     const body = toFormData({ name, type, comment });
-    const resp = await this.fetch(`POST /service`, { body });
+    const resp = await this.fetch('POST /service', { body });
     if (!resp.ok) {
       throw new Error(`Failed to create service '${name}': ${resp.status} - ${await resp.text()}`);
     }
@@ -320,7 +362,9 @@ class Fastly {
     const body = toFormData(removeEmptyStrings(settings, ['general.default_pci']));
     const resp = await this.fetch(http, { body });
     if (!resp.ok) {
-      throw new Error(`Failed to update settings of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to update settings of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
@@ -334,41 +378,40 @@ class Fastly {
     return resp.json();
   }
 
-  async createACL(serviceId, versionId, aclName) {
+  async createAcl(serviceId, versionId, aclName) {
     const http = `POST /service/${serviceId}/version/${versionId}/acl`;
-    const resp = await this.fetch(http, {  body: toFormData({ name: aclName }) });
+    const resp = await this.fetch(http, { body: toFormData({ name: aclName }) });
     if (!resp.ok) {
       throw new Error(`Failed to create ACL '${aclName}': ${resp.status} - ${await resp.text()}`);
     }
     return resp.json();
   }
 
-  async updateACL(serviceId, versionId, aclName, entries, batchSize = 500) {
+  async updateAcl(serviceId, versionId, aclName, entries, batchSize = 500) {
     // get ACL
     let resp = await this.fetch(`GET /service/${serviceId}/version/${versionId}/acl/${aclName}`);
     if (!resp.ok) {
       // create ACL
-      resp = await this.fetch(
-        `POST /service/${serviceId}/version/${versionId}/acl`,
-        { body: toFormData({ name: aclName }) }
-      );
+      resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/acl`, {
+        body: toFormData({ name: aclName }),
+      });
       if (!resp.ok) {
         throw new Error(`Failed to create ACL '${aclName}': ${resp.status} - ${await resp.text()}`);
       }
     }
     const { id } = await resp.json();
-    const items = entries.map(({
-      ip, subnet, negated, comment,
-    }) => ({
-      op: 'create', ip, subnet, negated, comment,
+    const items = entries.map(({ ip, subnet, negated, comment }) => ({
+      op: 'create',
+      ip,
+      subnet,
+      negated,
+      comment,
     }));
 
-    while (items.length) {
+    while (items.length > 0) {
       const body = { entries: items.splice(0, batchSize) };
-      // eslint-disable-next-line no-await-in-loop
       resp = await this.fetch(`PATCH /service/${serviceId}/acl/${id}/entries`, { body });
       if (!resp.ok) {
-        // eslint-disable-next-line no-await-in-loop
         throw new Error(`Failed to patch ACL '${aclName}': ${resp.status} - ${await resp.text()}`);
       }
     }
@@ -379,7 +422,9 @@ class Fastly {
     const body = toFormData(removeEmptyStrings(properties, ['response_condition']));
     const resp = await this.fetch(http, { body });
     if (!resp.ok) {
-      throw new Error(`Failed to add ${type} log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to add ${type} log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
@@ -389,28 +434,22 @@ class Fastly {
     const body = toFormData(removeEmptyStrings(properties, ['response_condition']));
     const resp = await this.fetch(http, { body });
     if (!resp.ok) {
-      throw new Error(`Failed to update ${type} log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to update ${type} log endpoint ${name} of ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
 
   async enabledProducts(serviceId) {
-    const PRODUCTS = [
-      'brotli_compression',
-      'domain_inspector',
-      'fanout',
-      'image_optimizer',
-      'origin_inspector',
-      'websockets',
-      'bot_management',
-      'ngwaf'
-    ];
     const products = {};
     for (const product of PRODUCTS) {
       const http = `GET /enabled-products/v1/${product}/services/${serviceId}`;
       const resp = await this.fetch(http);
       if (resp.status !== 200 && resp.status !== 400) {
-        throw new Error(`Failed to retrieve product status for ${product} on service ${serviceId}: ${resp.status} - ${await resp.text()}`);
+        throw new Error(
+          `Failed to retrieve product status for ${product} on service ${serviceId}: ${resp.status} - ${await resp.text()}`,
+        );
       }
       const result = await resp.json();
       products[product] = result?.product?.id === product;
@@ -422,7 +461,9 @@ class Fastly {
     const http = `PUT /enabled-products/v1/${product}/services/${serviceId}`;
     const resp = await this.fetch(http);
     if (!resp.ok) {
-      throw new Error(`Failed to enable product ${product} on service ${serviceId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to enable product ${product} on service ${serviceId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
@@ -431,27 +472,33 @@ class Fastly {
     const http = `PATCH /service/${serviceId}/version/${versionId}/image_optimizer_default_settings`;
     const resp = await this.fetch(http, { body: settings });
     if (!resp.ok) {
-      throw new Error(`Failed to update Image Optimizer settings on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to update Image Optimizer settings on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
 
-  async createVCL(serviceId, versionId, name, content, main = false) {
+  async createVcl(serviceId, versionId, name, content, main = false) {
     const http = `POST /service/${serviceId}/version/${versionId}/vcl`;
     const body = toFormData({ name, content, main });
     const resp = await this.fetch(http, { body });
     if (!resp.ok) {
-      throw new Error(`Failed to create VCL ${name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to create VCL ${name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
 
-  async updateVCL(serviceId, versionId, name, content, main = false) {
+  async updateVcl(serviceId, versionId, name, content, main = false) {
     const http = `PUT /service/${serviceId}/version/${versionId}/vcl/${name}`;
     const body = toFormData({ content, main });
     const resp = await this.fetch(http, { body });
     if (!resp.ok) {
-      throw new Error(`Failed to update VCL ${name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to update VCL ${name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
@@ -460,7 +507,9 @@ class Fastly {
     const http = `POST /service/${serviceId}/version/${versionId}/header`;
     const resp = await this.fetch(http, { body: toFormData(header) });
     if (!resp.ok) {
-      throw new Error(`Failed to create header ${header.name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to create header ${header.name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
@@ -469,11 +518,10 @@ class Fastly {
     const http = `POST /service/${serviceId}/version/${versionId}/request_settings`;
     const resp = await this.fetch(http, { body: toFormData(requestSetting) });
     if (!resp.ok) {
-      throw new Error(`Failed to add request setting ${requestSetting.name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`);
+      throw new Error(
+        `Failed to add request setting ${requestSetting.name} on service ${serviceId} version ${versionId}: ${resp.status} - ${await resp.text()}`,
+      );
     }
     return resp.json();
   }
 }
-
-// eslint-disable-next-line import/prefer-default-export
-export { Fastly };

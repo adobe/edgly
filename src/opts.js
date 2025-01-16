@@ -12,59 +12,65 @@
 
 import { Config } from './config.js';
 
+const DEFAULT_CONFIG_FILE = 'fastly-dev.yaml';
+
 export const GLOBAL_OPTS = {
-  'api-token': {
-    alias: 't',
-    type: 'string',
-    describe: 'Fastly API Token',
-    demandOption:
-      'You must provide a Fastly API Token with -t/--api-token or via the FASTLY_API_TOKEN environment variable.',
-  },
   config: {
     alias: 'c',
     type: 'string',
-    default: 'fastly-dev.yaml',
+    default: DEFAULT_CONFIG_FILE,
     describe: 'Configuration file',
     coerce: (file) => {
-      global.config = Config.read(file);
+      global.config = Config.read(file, file === DEFAULT_CONFIG_FILE);
       return global.config;
     },
   },
-  dryRun: {
+  'dry-run': {
     alias: 'd',
     type: 'boolean',
     describe: 'Do not make any actual changes',
   },
-};
-
-export const SHARED_ARGS = {
-  serviceId: {
+  'api-token': {
+    alias: 't',
     type: 'string',
-    describe: 'Fastly service ID',
+    describe: 'Fastly API Token',
+  },
+  verbose: {
+    alias: 'v',
+    type: 'boolean',
+    describe: 'Verbose output',
+    // biome-ignore lint/suspicious/noAssignInExpressions: smooth
+    coerce: (v) => (global.verbose = v),
   },
 };
+
+export const SHARED_ARGS = {};
 
 export const SHARED_OPTS = {
-  environment: {
-    env: {
-      alias: 'e',
-      type: 'string',
-      describe: 'Environment',
-      default: 'production',
+  apiToken: {
+    'api-token': {
+      demandOption:
+        'You must provide a Fastly API Token with -t/--api-token or via the FASTLY_API_TOKEN environment variable.',
     },
   },
-  // serviceId: {
-  //   s: {
-  //     alias: 'service-id',
-  //     ...SHARED_ARGS.serviceId,
-  //   },
-  // },
-  // serviceFile: {
-  //   f: {
-  //     alias: 'service-file',
-  //     type: 'path',
-  //     default: 'service.json',
-  //     describe: 'Write service configuration into this file',
-  //   },
-  // },
+  serviceId: {
+    'service-id': {
+      alias: 's',
+      type: 'string',
+      describe: 'Fastly service ID',
+    },
+  },
+  secretsMode: {
+    'secrets-mode': {
+      type: 'string',
+      describe: "How to handle secrets: 'replace' or 'warn'.",
+      default: 'replace',
+    },
+  },
+  includeSecrets: {
+    'include-secrets': {
+      type: 'boolean',
+      describe: 'Include private dictionary values',
+    },
+  },
 };

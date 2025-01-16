@@ -88,7 +88,11 @@ const ADDITIONAL_TYPES = {
 function onFail(msg, err, yargs) {
   if (err) {
     // errors thrown from code
-    console.error(chalk.red(err.stack));
+    if (global.verbose) {
+      console.error(chalk.red(err.stack));
+    } else {
+      console.error(chalk.red('Error:', err.message));
+    }
     process.exit(2);
   } else {
     // yargs validation errors (only message, no err)
@@ -140,6 +144,16 @@ function handleAdditionalTypes(_yargs, opt) {
  *   .options(..)
  *   .run();
  * ```
+ *
+ * Features:
+ * - better fail handler:
+ *   - red error output
+ *   - better messages for common validation errors
+ *   - show help on argument validation errors
+ *   - if global.verbose is set, show full stack trace on application errors
+ *   - exit with code 1 on validation errors
+ *   - exit with code 2 on application errors
+ * - TODO: document other stuff
  */
 // biome-ignore lint/style/noDefaultExport: we mimic yargs here
 export default function yargsAhoy(processArgs, cwd, parentRequire) {

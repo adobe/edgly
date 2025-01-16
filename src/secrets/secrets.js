@@ -12,6 +12,7 @@
 
 import fs from 'node:fs';
 import yaml from 'yaml';
+import { getVariableExpression, isVariableExpression } from '../fastly/service.js';
 
 const PATTERNS_YAML_URL = new URL('patterns.yaml', import.meta.url);
 // lazy loaded
@@ -138,12 +139,8 @@ function findSecretsInString(input) {
   return matches;
 }
 
-function variableExpression(varName) {
-  return `\${{${varName}}}`;
-}
-
 function replaceSecrets(input, secret, variable) {
-  return input.replaceAll(secret, variableExpression(variable));
+  return input.replaceAll(secret, getVariableExpression(variable));
 }
 
 function detectSecretsInDictionaries(service, mode) {
@@ -247,6 +244,11 @@ function detectSecretsInLogFields(service, mode) {
     if (Array.isArray(service[logType])) {
       for (const logConfig of service[logType]) {
         if (logConfig[secretField]) {
+          // ignore if already a variable
+          if (isVariableExpression(logConfig[secretField])) {
+            continue;
+          }
+
           const secret = {
             name: `Log ${logType}.${secretField}`,
             value: logConfig[secretField],
@@ -256,7 +258,7 @@ function detectSecretsInLogFields(service, mode) {
           secrets.push(secret);
 
           if (mode === 'replace') {
-            logConfig[secretField] = variableExpression(secret.var);
+            logConfig[secretField] = getVariableExpression(secret.var);
           }
         }
       }
@@ -282,14 +284,14 @@ export function detectSecrets(service, mode) {
   if (secrets.length > 0) {
     console.warn();
     if (mode === 'replace') {
-      console.warn(`Found ${secrets.length} potential secrets & replaced with variables:`);
+      console.warn(`Warning: Replaced ${secrets.length} potential secrets with variables:`);
       for (const secret of secrets) {
         console.warn(`- ${secret.var} = ${truncate(secret.value, 40)} (${secret.type})`);
       }
 
       fs.writeFileSync(SECRETS_FILE, secrets.map((s) => `${s.var}="${s.value}"`).join('\n'));
     } else {
-      console.warn('Warning: Found following potential secrets:');
+      console.warn(`Warning: Found ${secrets.length} potential secrets:`);
       for (const secret of secrets) {
         console.warn(`- ${secret.name}: ${truncate(secret.value, 40)} (${secret.type})`);
       }
@@ -301,25 +303,9 @@ export function detectSecrets(service, mode) {
       console.warn('     DO NOT commit this file to version control, but use CI secret store instead.');
     } else {
       console.warn('  1. Use built-in env var replacement using ${{VAR}}.');
-      console.warn('     Run with --secretsMode=replace to replace automatically.');
+      console.warn('     Run with --secrets-mode=replace to replace automatically.');
     }
     console.warn('  2. Consider using a Fastly write-only dictionary, and dict lookup where possible.');
-    console.warn('  3. False positive: Ignore via secrets_detector.ignore_keys or ignore_values config.');
+    console.warn('  3. False positives: Ignore via secrets_detector.ignore_keys or ignore_values config.');
   }
-}
-
-export function replaceSecretVars(service) {
-  const json = JSON.stringify(service);
-
-  const replaced = json.replaceAll(/\$\{\{([A-Z0-9_]+)\}\}/g, (match, varName) => {
-    if (process.env[varName]) {
-      console.warn(`Secrets: Replacing ${match} with env var`);
-      return process.env[varName];
-    }
-
-    console.warn(`Warning: Environment variable not found: ${varName}`);
-    return match;
-  });
-
-  return JSON.parse(replaced);
 }

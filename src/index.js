@@ -11,23 +11,24 @@
  * governing permissions and limitations under the License.
  */
 
-import fetch from './commands/fetch.js';
-import push from './commands/push.js';
+import fiddle from './commands/fiddle/fiddle.js';
+import service from './commands/service/service.js';
 import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
 import yargsAhoy from './yargs-ahoy.js';
 
 const yargs = yargsAhoy();
 await yargs
-  .command(fetch)
-  .command(push)
+  .command(service)
+  .command(fiddle)
   .command(version)
+  .completion('shell-completion', 'Print completion script for .bashrc or .zshrc')
   .version(false)
   .demandCommand(1)
   .recommendCommands()
   .strict()
   .options(GLOBAL_OPTS)
-  .env('FASTLY')
+  .env('FASTLY_DEV')
   // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=fastly-dev
   .prologue('')
   .prologue('   __           _   _                 _            ')
@@ -37,11 +38,16 @@ await yargs
   .prologue(' |_|  \\__,_|___/\\__|_|\\__, |      \\__,_|\\___| \\_/  ')
   .prologue('                      |___/                        ')
   .prologue('')
-  .usage('$0 [<flags>] <command> [<args> ...]')
+  .prologue('                https://github.com/adobe/fastly-dev')
+  .prologue('')
+  .usage('$0 <command> [flags]')
   .usage('')
-  .usage('Tool for developing Fastly VCL services using CI/CD')
+  .usage('Tool enabling GitOps and CI/CD for Fastly VCL services')
+  .epilogue('  Flags can be provided as environment variables prefixed with FASTLY_DEV_')
+  .epilogue('  Example: --api-token becomes FASTLY_DEV_API_TOKEN.')
+  .epilogue('')
   .epilogue(`Version: ${version.getVersion()}`)
   .run();
 
-// yargs or adobe/fetch hangs at the end, so we have to force quit
+// yargs and/or @adobe/fetch somehow hangs at the end, so we force quit as workaround
 process.exit();

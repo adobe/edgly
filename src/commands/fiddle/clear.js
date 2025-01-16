@@ -46,7 +46,6 @@ export default {
     const fiddleApi = new FastlyFiddleApi();
     await fiddleApi.update(argv.url, emptyFiddle);
 
-    console.log();
-    console.log(`Successfully cleared Fiddle: ${argv.url}`);
+    console.debug(`Successfully cleared Fiddle: ${argv.url}`);
   },
 };

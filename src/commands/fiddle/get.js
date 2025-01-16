@@ -55,20 +55,15 @@ export default {
 
     if (argv.dryRun) {
       console.log('Dry run. Not writing service configuration to disk.');
-      if (argv.verbose) {
-        console.log();
-        console.log('Service json:');
-        console.log(service);
-      }
+      console.debug('\nService json:');
+      console.debug(service);
       return;
     }
 
     writeService(service);
 
-    console.log();
-    console.debug('Successfully written latest Fiddle state.');
+    console.debug('\nSuccessfully written latest Fiddle version.');
 
-    // TODO: remove verbose logging
     // TODO: unnecessary when getting Fiddle: Warning: Environment variable not found: LOG_HTTPS_HEADER_VALUE
   },
 };

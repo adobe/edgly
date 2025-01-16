@@ -81,6 +81,6 @@ export default {
 
     // update config file with new service id for environment
     global.config.set(`env.${env}.service_id`, id).write();
-    console.log(`Updated ${global.config.file()} with service id for ${env}.`);
+    console.debug(`\nUpdated ${global.config.file()} with service id for ${env}.`);
   },
 };

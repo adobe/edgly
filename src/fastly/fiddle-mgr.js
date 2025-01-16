@@ -142,12 +142,12 @@ function getHostname(backend) {
 function fiddleOriginsToBackends(fiddle, service) {
   const delta = fiddle.origins.length - service.backends.length;
   if (delta > 0) {
-    console.warn(`Warning: Fiddle added ${delta} new backends. Please rename as needed:`);
+    console.warn(`\nWarning: Fiddle added ${delta} new backends. Please rename as needed:`);
     for (let i = service.backends.length; i < fiddle.origins.length; i++) {
       console.warn(`- F_origin_${i} = ${fiddle.origins[i]} (new)`);
     }
   } else if (delta < 0) {
-    console.warn(`Warning: Fiddle removed ${-delta} backend. Please check:`);
+    console.warn(`\nWarning: Fiddle removed ${-delta} backend. Please check:`);
     for (let i = fiddle.origins.length; i < service.backends.length; i++) {
       const backend = service.backends[i];
       console.warn(`- ${backend.name} = ${getHostname(backend)} (removed)`);

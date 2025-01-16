@@ -12,7 +12,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import chalk from 'chalk';
 import { globSync } from 'glob';
 import { asMap, openFile, removeLinePrefix, sortAlpha, toSortedJson, trimEmptyLines } from '../util.js';
 import { FastlyService } from './service.js';
@@ -55,7 +54,7 @@ function initFolder(dir, pattern, array) {
 function writeAcls(acls) {
   if (Array.isArray(acls) && acls.length > 0) {
     fs.writeFileSync(FILE_ACL, toSortedJson(acls));
-    console.log(`- ACLs ${FILE_ACL}`);
+    console.debug(`- ACLs ${FILE_ACL}`);
   } else if (fs.existsSync(FILE_ACL)) {
     fs.unlinkSync(FILE_ACL);
   }
@@ -63,7 +62,7 @@ function writeAcls(acls) {
 
 function readAcls(service) {
   if (fs.existsSync(FILE_ACL)) {
-    console.log(`- ACLs ${FILE_ACL}`);
+    console.debug(`- ACLs ${FILE_ACL}`);
     service.acls = JSON.parse(fs.readFileSync(FILE_ACL));
   } else {
     service.acls = [];
@@ -139,7 +138,7 @@ function writeSnippets(service) {
 
     file.close();
 
-    console.log(`- Snippet ${snippetPath}`);
+    console.debug(`- Snippet ${snippetPath}`);
   }
 }
 
@@ -147,7 +146,7 @@ function readSnippets(service) {
   service.snippets = [];
 
   for (const snippetPath of globSync(path.join(DIR_SNIPPETS, '*.vcl'))) {
-    console.log(`- Snippet file ${snippetPath}`);
+    console.debug(`- Snippet file ${snippetPath}`);
 
     const type = path.basename(snippetPath, '.vcl');
 
@@ -194,7 +193,7 @@ function writeVcls(vcls) {
 
   for (const vcl of vcls) {
     if (!vcl.name.endsWith('.vcl')) {
-      console.warn(`Warning: VCL ${vcl.name} does not end with .vcl`);
+      console.warn(`\nWarning: VCL ${vcl.name} does not end with .vcl`);
     }
 
     const vclPath = path.join(DIR_VCLS, `${vcl.name}`);
@@ -205,7 +204,7 @@ function writeVcls(vcls) {
     file.write(trimEmptyLines(vcl.content));
     file.close();
 
-    console.log(`- VCL ${vclPath}`);
+    console.debug(`- VCL ${vclPath}`);
   }
 }
 
@@ -213,7 +212,7 @@ function readVcls(service) {
   service.vcls = [];
 
   for (const vclPath of globSync(path.join(DIR_VCLS, '*.vcl'))) {
-    console.log(`- VCL ${vclPath}`);
+    console.debug(`- VCL ${vclPath}`);
 
     const vcl = {
       name: path.basename(vclPath),
@@ -262,11 +261,11 @@ function writeDictionaries(dictionaries) {
 
       // if exists locally & has custom items, don't overwrite
       if (storedDict?.items.length > 0) {
-        console.log(`- Dictionary ${dictPath} (private, NOT OVERWRITTEN)`);
+        console.debug(`- Dictionary ${dictPath} (private, NOT OVERWRITTEN)`);
         // TODO: compare dictionary digest to detect any changes.
         //       need to write digest locally on every 'service update' to keep track of it
         if (storedDict.items.length !== dict.info.item_count) {
-          console.warn(`Warning: Private dictionary '${dict.name}' seems to be modified on Fastly side,`);
+          console.warn(`\nWarning: Private dictionary '${dict.name}' seems to be modified on Fastly side,`);
           console.warn(
             `         found different number of entries: Local ${storedDict.items.length} vs. Fastly ${dict.info.item_count}.`,
           );
@@ -277,9 +276,9 @@ function writeDictionaries(dictionaries) {
         }
         continue;
       }
-      console.log(`- Dictionary ${dictPath} (private)`);
+      console.debug(`- Dictionary ${dictPath} (private)`);
     } else {
-      console.log(`- Dictionary ${dictPath}`);
+      console.debug(`- Dictionary ${dictPath}`);
     }
 
     const file = openFile(dictPath, 'w');
@@ -302,7 +301,7 @@ function writeDictionaries(dictionaries) {
       file.writeLn("# next deployment using e.g. 'fastly service update'.");
 
       if (isNew) {
-        console.warn(`Warning: Private dictionary '${dict.name}' has ${dict.info.item_count} unknown entries.`);
+        console.warn(`\n Private dictionary '${dict.name}' has ${dict.info.item_count} unknown entries.`);
         console.warn('         Private entries cannot be read from Fastly. Please manually identify and add');
         console.warn('         the entries in the file using environment variable replacement: KEY="${{VAR}}"');
       }
@@ -367,7 +366,7 @@ function readDictionaries(service) {
   for (const dictPath of sortAlpha(globSync(path.join(DIR_DICTIONARIES, '*.ini')))) {
     const dict = readDictionary(dictPath);
 
-    console.log(`- Dictionary ${dictPath} ${dict.write_only ? '(write-only)' : ''}`);
+    console.debug(`- Dictionary ${dictPath} ${dict.write_only ? '(write-only)' : ''}`);
     service.dictionaries.push(dict);
   }
 }
@@ -378,8 +377,8 @@ function readDictionaries(service) {
  * @param {FastlyService} service Fastly service configuration
  */
 export function writeService(service) {
-  console.log();
-  console.log('Writing configuration to local folder:');
+  console.debug();
+  console.debug('Writing configuration to local folder:');
 
   writeAcls(service.acls);
   writeSnippets(service);
@@ -389,7 +388,7 @@ export function writeService(service) {
   // main service config
   const slim = service.removeKeys(['acls', 'snippets', 'vcls', 'dictionaries']);
   fs.writeFileSync(FILE_SERVICE, slim.toSortedJson());
-  console.log(`- Config ${FILE_SERVICE}`);
+  console.debug(`- Config ${FILE_SERVICE}`);
 }
 
 /**
@@ -404,7 +403,7 @@ export function readService(env) {
     process.exit(1);
   }
 
-  console.log('Reading service config...');
+  console.debug('Reading service config...');
   let service = FastlyService.fromJson(fs.readFileSync(FILE_SERVICE));
   readAcls(service);
   readSnippets(service);
@@ -414,17 +413,15 @@ export function readService(env) {
   service = service.replaceVariables();
 
   if (env !== 'production') {
-    console.log(`\nAdjusting domains for environment '${env}'...`);
+    console.debug(`\nAdjusting domains for environment '${env}'...`);
 
     const domainMap = global.config.env?.[env]?.domains;
 
     const unmappedDomains = service.changeDomains(domainMap);
     if (unmappedDomains.length > 0) {
-      console.error(
-        chalk.red(`\nError: The following domains are not mapped in env.${env}.domains in configuration:\n`),
-      );
+      console.error(`\nError: The following domains are not mapped in env.${env}.domains in configuration:\n`);
       for (const domain of unmappedDomains) {
-        console.error(chalk.red(`       ${domain}`));
+        console.error(`       ${domain}`);
       }
       process.exit(1);
     }

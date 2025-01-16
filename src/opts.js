@@ -14,6 +14,11 @@ import { Config } from './config.js';
 
 const DEFAULT_CONFIG_FILE = 'fastly-dev.yaml';
 
+// turn off console.debug by default
+// and only turn it on below if -v/--verbose is set
+const consoleDebug = console.debug;
+console.debug = () => ({});
+
 export const GLOBAL_OPTS = {
   config: {
     alias: 'c',
@@ -39,8 +44,13 @@ export const GLOBAL_OPTS = {
     alias: 'v',
     type: 'boolean',
     describe: 'Verbose output',
-    // biome-ignore lint/suspicious/noAssignInExpressions: smooth
-    coerce: (v) => (global.verbose = v),
+    coerce: (verbose) => {
+      global.verbose = verbose;
+      if (verbose) {
+        console.debug = consoleDebug;
+      }
+      return verbose;
+    },
   },
 };
 
@@ -49,8 +59,7 @@ export const SHARED_ARGS = {};
 export const SHARED_OPTS = {
   apiToken: {
     'api-token': {
-      demandOption:
-        'You must provide a Fastly API Token with -t/--api-token or via the FASTLY_API_TOKEN environment variable.',
+      demandOption: 'Set Fastly API Token using --api-token or FASTLY_DEV_API_TOKEN environment variable.',
     },
   },
   serviceId: {

@@ -113,7 +113,7 @@ export class FastlyService {
     for (const domain of this.domains) {
       const newDomain = domainMap?.[domain.name];
       if (newDomain && newDomain !== domain.name) {
-        // console.log(`- ${domain.name} -> ${newDomain}`);
+        console.debug(`- ${domain.name} -> ${newDomain}`);
         domain.name = newDomain;
       } else {
         unmappedDomains.push(domain.name);

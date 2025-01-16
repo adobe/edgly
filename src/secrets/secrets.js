@@ -272,8 +272,8 @@ export function detectSecrets(service, mode) {
   //  warn: print warning
   //  replace: replace secrets with $ENV VAR (default)
 
-  console.log();
-  console.log(`Checking for secrets in service config (mode=${mode})...`);
+  console.debug();
+  console.debug(`Checking for secrets in service config (mode=${mode})...`);
 
   const secrets = [];
   secrets.push(...detectSecretsInDictionaries(service, mode));
@@ -282,16 +282,15 @@ export function detectSecrets(service, mode) {
   secrets.push(...detectSecretsInLogFields(service, mode));
 
   if (secrets.length > 0) {
-    console.warn();
     if (mode === 'replace') {
-      console.warn(`Warning: Replaced ${secrets.length} potential secrets with variables:`);
+      console.warn(`\nWarning: Replaced ${secrets.length} potential secrets with variables:`);
       for (const secret of secrets) {
         console.warn(`- ${secret.var} = ${truncate(secret.value, 40)} (${secret.type})`);
       }
 
       fs.writeFileSync(SECRETS_FILE, secrets.map((s) => `${s.var}="${s.value}"`).join('\n'));
     } else {
-      console.warn(`Warning: Found ${secrets.length} potential secrets:`);
+      console.warn(`\nWarning: Found ${secrets.length} potential secrets:`);
       for (const secret of secrets) {
         console.warn(`- ${secret.name}: ${truncate(secret.value, 40)} (${secret.type})`);
       }

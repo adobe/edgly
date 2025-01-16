@@ -102,7 +102,7 @@ function onFail(msg, err, yargs) {
     }
 
     yargs.showHelp('log');
-    console.log();
+    console.error();
 
     console.error(chalk.red('Error:', msg));
     process.exit(1);

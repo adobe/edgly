@@ -41,11 +41,8 @@ export default {
 
     if (argv.dryRun) {
       console.log('Dry run. Not updating fiddle.');
-      if (argv.verbose) {
-        console.log();
-        console.log('Fiddle json:');
-        console.log(fiddle);
-      }
+      console.debug('\nFiddle json:');
+      console.debug(fiddle);
       return;
     }
 

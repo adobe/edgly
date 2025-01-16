@@ -80,7 +80,6 @@ export default {
 
     writeService(service);
 
-    console.log();
-    console.log(`Successfully written ${service.service_id} v${service.version}.`);
+    console.debug(`\nSuccessfully written ${service.service_id} v${service.version}.`);
   },
 };

@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '22.x'
       - run: npm ci
       - run: npm run license-check
       - run: npm run lint-ci
@@ -27,9 +27,12 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-      - run: npx @adobe/sizewatcher
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # TODO: fix and enable sizewatcher again
+      #       Error: Cloning into '/tmp/tmp-1934-Ul9M1qnV8ucx/before'...
+      #       fatal: could not read Username for 'https://github.com': No such device or address
+      # - run: npx @adobe/sizewatcher
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Semantic Release (Dry Run)
         run: npm run semantic-release-dry
         env:
@@ -45,10 +48,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '22.x'
       - run: npm ci
       - run: npm run semantic-release
         env:

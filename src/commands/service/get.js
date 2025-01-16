@@ -12,7 +12,7 @@
 
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { writeService } from '../../fastly/store.js';
-import { SHARED_OPTS } from '../../opts.js';
+import { SHARED_OPTS, override } from '../../opts.js';
 import { detectSecrets } from '../../secrets/secrets.js';
 
 export default {
@@ -26,19 +26,17 @@ export default {
 
     yargs
       .options(SHARED_OPTS.apiToken)
-      .options(SHARED_OPTS.serviceId)
-      .options({
-        env: {
-          alias: 'e',
-          type: 'string',
+      .options(
+        override(SHARED_OPTS.env, {
           describe: 'Environment to pull from',
-        },
-        version: {
-          alias: 'V',
-          type: 'string',
-          describe: 'Service version to retrieve. Defaults to latest version.   Use "active" for the active version.',
-        },
-      })
+        }),
+      )
+      .options(SHARED_OPTS.serviceId)
+      .options(
+        override(SHARED_OPTS.version, {
+          describe: 'Service version to retrieve. Defaults to latest version.  Use "active" for the active version.',
+        }),
+      )
       .options(SHARED_OPTS.secretsMode);
   },
   handler: async (argv) => {

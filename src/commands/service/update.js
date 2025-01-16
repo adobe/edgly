@@ -13,7 +13,7 @@
 import { execSync } from 'node:child_process';
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { readService } from '../../fastly/store.js';
-import { SHARED_OPTS } from '../../opts.js';
+import { SHARED_OPTS, override } from '../../opts.js';
 
 function getLastGitCommit() {
   try {
@@ -33,29 +33,25 @@ export default {
       .usage('$0 service update')
       .usage('')
       .usage('Update Fastly service with configuration from current folder.')
-      .usage('This will create a new service version by default.')
+      .usage('Creates a new service version by default.')
       .usage('')
       .usage('Alias: up');
 
     // biome-ignore format: normal yargs style
     yargs
       .options(SHARED_OPTS.apiToken)
+      .options(override(SHARED_OPTS.env, {
+        describe: 'Environment to update',
+        default: 'production',
+      }))
       .options(SHARED_OPTS.serviceId)
+      .options(override(SHARED_OPTS.version,{
+        describe: 'Service version to overwrite (must exist)',
+      }))
       .options({
-        env: {
-          alias: 'e',
-          type: 'string',
-          describe: 'Environment to update',
-          default: 'production',
-        },
         comment: {
           type: 'string',
           describe: 'Comment for version. Defaults to last git commit (if available) or a default message.',
-        },
-        version: {
-          alias: 'V',
-          type: 'string',
-          describe: 'Service version to overwrite (must exist)',
         },
         activate: {
           alias: 'a',

@@ -12,7 +12,7 @@
 
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { readService } from '../../fastly/store.js';
-import { SHARED_OPTS } from '../../opts.js';
+import { SHARED_OPTS, override } from '../../opts.js';
 
 export default {
   command: 'create <name>',
@@ -33,14 +33,10 @@ export default {
         describe: 'Name for new service',
       })
       .options(SHARED_OPTS.apiToken)
-      .options({
-        env: {
-          alias: 'e',
-          type: 'string',
-          describe: 'Environment to create',
-          default: 'production',
-        }
-      });
+      .options(override(SHARED_OPTS.env, {
+        describe: 'Environment to create',
+        default: 'production',
+      }));
   },
 
   handler: async (argv) => {

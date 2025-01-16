@@ -30,15 +30,15 @@ export const GLOBAL_OPTS = {
       return global.config;
     },
   },
-  'dry-run': {
-    alias: 'd',
-    type: 'boolean',
-    describe: 'Do not make any actual changes',
-  },
   'api-token': {
     alias: 't',
     type: 'string',
     describe: 'Fastly API Token',
+  },
+  'dry-run': {
+    alias: 'd',
+    type: 'boolean',
+    describe: 'Do not make any changes',
   },
   verbose: {
     alias: 'v',
@@ -62,11 +62,25 @@ export const SHARED_OPTS = {
       demandOption: 'Set Fastly API Token using --api-token or FASTLY_DEV_API_TOKEN environment variable.',
     },
   },
+  env: {
+    env: {
+      alias: 'e',
+      type: 'string',
+      describe: 'Environment',
+    },
+  },
   serviceId: {
     'service-id': {
       alias: 's',
       type: 'string',
       describe: 'Fastly service ID',
+    },
+  },
+  version: {
+    version: {
+      alias: 'V',
+      type: 'string',
+      describe: 'Service version',
     },
   },
   secretsMode: {
@@ -83,3 +97,13 @@ export const SHARED_OPTS = {
     },
   },
 };
+
+export function override(opt, overrides) {
+  const key = Object.keys(opt)[0];
+  return {
+    [key]: {
+      ...opt[key],
+      ...overrides,
+    },
+  };
+}

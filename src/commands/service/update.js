@@ -39,7 +39,6 @@ export default {
 
     // biome-ignore format: normal yargs style
     yargs
-      .options(SHARED_OPTS.apiToken)
       .options(override(SHARED_OPTS.env, {
         describe: 'Environment to update',
         default: 'production',
@@ -58,7 +57,8 @@ export default {
           type: 'boolean',
           describe: 'Activate service version after update',
         }
-      });
+      })
+      .options(SHARED_OPTS.apiToken);
   },
   handler: async (argv) => {
     const { env } = argv;

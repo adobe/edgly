@@ -32,11 +32,11 @@ export default {
         type: 'string',
         describe: 'Name for new service',
       })
-      .options(SHARED_OPTS.apiToken)
       .options(override(SHARED_OPTS.env, {
         describe: 'Environment to create',
         default: 'production',
-      }));
+      }))
+      .options(SHARED_OPTS.apiToken);
   },
 
   handler: async (argv) => {

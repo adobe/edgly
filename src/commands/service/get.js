@@ -25,7 +25,6 @@ export default {
       .usage('Retrieve service configuration from Fastly and write to current folder.');
 
     yargs
-      .options(SHARED_OPTS.apiToken)
       .options(
         override(SHARED_OPTS.env, {
           describe: 'Environment to pull from',
@@ -37,7 +36,8 @@ export default {
           describe: 'Service version to retrieve. Defaults to latest version.  Use "active" for the active version.',
         }),
       )
-      .options(SHARED_OPTS.secretsMode);
+      .options(SHARED_OPTS.secretsMode)
+      .options(SHARED_OPTS.apiToken);
   },
   handler: async (argv) => {
     let id;

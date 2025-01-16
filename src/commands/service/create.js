@@ -15,20 +15,20 @@ import { readService } from '../../fastly/store.js';
 import { SHARED_OPTS, override } from '../../opts.js';
 
 export default {
-  command: 'create <name>',
+  command: 'create',
   describe: 'Create new Fastly service from local configuration',
 
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
     yargs
-      .usage('$0 service create <name>')
+      .usage('$0 service create')
       .usage('')
       .usage('Create new service in Fastly based on service configuration from current folder.')
       .usage('Use to create different environments (specify -e) or copies of the service.');
 
     // biome-ignore format: normal yargs style
     yargs
-      .positional('name', {
+      .options('name', {
         type: 'string',
         describe: 'Name for new service',
       })

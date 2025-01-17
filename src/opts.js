@@ -95,6 +95,13 @@ export const SHARED_OPTS = {
       describe: 'Include private dictionary values',
     },
   },
+  force: {
+    force: {
+      alias: 'f',
+      type: 'boolean',
+      describe: 'Force operation without prompting for confirmation',
+    },
+  },
 };
 
 export function override(opt, overrides) {

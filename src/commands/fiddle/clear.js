@@ -10,7 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
+import { stdin, stdout } from 'node:process';
+import { createInterface } from 'node:readline/promises';
 import { FastlyFiddleApi } from '../../fastly/api/fiddle-api.js';
+import { SHARED_OPTS } from '../../opts.js';
 
 export default {
   command: 'clear <url>',
@@ -28,6 +31,7 @@ export default {
         type: 'string',
         describe: 'URL or ID of Fastly Fiddle',
       })
+      .options(SHARED_OPTS.force);
   },
   handler: async (argv) => {
     if (argv.dryRun) {
@@ -44,8 +48,23 @@ export default {
     };
 
     const fiddleApi = new FastlyFiddleApi();
+
+    if (!argv.force) {
+      const response = await fiddleApi.get(argv.url);
+      console.log(response.fiddle.title);
+
+      const rl = createInterface({ input: stdin, output: stdout });
+      const answer = await rl.question('\nDo you want to clear this Fiddle? [y/n] ');
+      rl.close();
+      if (!['y', 'Y'].includes(answer)) {
+        process.exit(3);
+      }
+    }
+
     await fiddleApi.update(argv.url, emptyFiddle);
 
-    console.debug(`Successfully cleared Fiddle: ${argv.url}`);
+    if (!argv.force) {
+      console.log(`\nCleared Fiddle: ${argv.url}`);
+    }
   },
 };

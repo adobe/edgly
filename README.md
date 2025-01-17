@@ -1,9 +1,22 @@
 ## @adobe/fastly-dev
 
-> Tool for developing Fastly VCL services using CI/CD
+> Tool enabling GitOps and CI/CD for Fastly VCL services
 ---
 
-TODO feature description
+Enables version control for Fastly VCL services.
+
+* Supports syncing between a local version controlled folder and a Fastly service.
+* Supports syncing with Fiddles to develop VCL snippets
+while still being a connected to version controlled configuration.
+* File mapping:
+  * Service configuration: `service.json`
+  * VCL snippets: `snippets/*.vcl`
+  * VCL files: `vcl/*.vcl`
+  * Dictionaries: `dictionaries/*.ini`
+  * Private dictionaries: `dictionaries/private.*.ini`
+  * ACLs: `acl.json`
+* Detects secrets to prevent accidental commits.
+* Supports variable replacement for secrets and other dynamic configuration in all places: `${{VAR}}`
 
 ## Installation
 
@@ -13,67 +26,98 @@ npm install -g @adobe/fastly-dev
 
 ## Usage
 
-TODO this is work in progress
+```
+   __           _   _                 _            
+  / _| __ _ ___| |_| |_   _        __| | _____   __
+ | |_ / _` / __| __| | | | |_____ / _` |/ _ \ \ / /
+ |  _| (_| \__ \ |_| | |_| |_____| (_| |  __/\ V / 
+ |_|  \__,_|___/\__|_|\__, |      \__,_|\___| \_/  
+                      |___/                        
 
-### Services
+                https://github.com/adobe/fastly-dev
 
-Download initial service configuration, for example into a new version controlled directory:
+USAGE
+fastly-dev <command> [flags]
 
-```sh
-fastly-dev service get <service-id>
+Tool enabling GitOps and CI/CD for Fastly VCL services
+
+COMMANDS
+  service             Fastly VCL service commands
+  fiddle              Fastly VCL fiddle commands
+  version             Show version info
+  shell-completion    Print completion script for .bashrc or .zshrc
+
+GLOBAL FLAGS
+  -c, --config     Configuration file      [string] [default: "fastly-dev.yaml"]
+  -t, --api-token  Fastly API Token                                     [string]
+  -d, --dry-run    Do not make any changes                             [boolean]
+  -v, --verbose    Verbose output                                      [boolean]
+  -h, --help       Show help                                           [boolean]
+
+  Flags can be provided as environment variables prefixed with FASTLY_DEV_
+  Example: --api-token becomes FASTLY_DEV_API_TOKEN.
 ```
 
-Update service configuration:
+### Initial setup for a Fastly service
 
-```sh
-fastly-dev service update
-```
+1. Create new service or use existing service from [Fastly](https://manage.fastly.com)
+2. Get the service id from the Fastly UI
+3. Inside a git repo (one repo per Fastly service recommended)
+4. Fetch the service configuration
+   ```sh
+   fastly-dev service get <service-id>
+   ```
+5. Review for any secrets detected
+6. Commit the newly added files
+7. Then follow with [Development workflow](#development-workflow)
 
-Create a new stage service copy:
+### Create a stage environment
 
-1. edit `fastly-dev.yaml` and add stage domain names:
+A stage environment allows to safely test changes in Fastly before deploying to the production service.
+
+1. Add stage environment to `fastly-dev.yaml` and map the domain names to the ones to be used for stage:
    ```yaml
    env:
      stage:
-       domains:
-         domain.com: "stage-domain.com"
-         "*.domain.com": "*.stage.domain.com"
+      domains:
+        example.com: "stage.example.com"
    ```
-2. create new service for stage:
+2. Create stage service:
    ```sh
-   fastly-dev service create -e stage
+   fastly-dev service create --env stage
    ```
+3. This will store the new service id in `fastly-dev.yaml`. Commit this file.
 
-Deploy to stage (uses service id from stage in `fastly-dev.yaml`):
+### Develop changes using Fiddles
 
-```sh
-fastly-dev service update -e stage
-```
+Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it allows to debug request handling in Fastly in depth. Note this will not work if the service uses entire VCL files, it only works with VCL snippets.
 
-Deploy to production (uses service id from `service.json`):
+1. Create a new fiddle:
+   ```sh
+   fastly-dev fiddle create
+   ```
+2. Click the printed link to open the Fiddle
+3. Develop the VCL code in the Fiddle
+4. Copy any tests needed for the work into the Fiddle
+5. When done, pull the changes from the Fiddle:
+   ```sh
+   fastly-dev fiddle get <fiddle-url>
+   ```
+6. Review the changes and commit
 
-```sh
-fastly-dev service update
-```
+### Test changes in stage then deploy to production
 
-### Fiddles
-
-Create new fiddle:
-
-```sh
-fastly-dev fiddle push
-```
-
-Update fiddle:
-```sh
-fastly-dev fiddle push <fiddle-id>
-```
-
-Download changes from fiddle:
-
-```sh
-fastly-dev fiddle fetch <fiddle-id>
-```
+1. Deploy to stage:
+   ```sh
+   fastly-dev service update --env stage --activate
+   ```
+3. Wait for Fastly changes to rollout, usually less than 30 seconds
+2. Run any tests against stage
+3. If successful, deploy to production:
+   ```sh
+   fastly-dev service update --activate
+   ```
+4. If something goes wrong, revert to old version using the Fastly UI
 
 ## Configuration
 
@@ -88,9 +132,10 @@ Full configuration file example:
 env:
   production:
     # fastly service id
-    service_id: abcd1234
+    id: abcd1234
   stage:
-    service_id: efgh5678
+    # stage service id
+    id: efgh5678
     # different domain names for stage env
     # map from the production domain name (in service.json)
     domains:

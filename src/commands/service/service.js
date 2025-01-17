@@ -12,6 +12,7 @@
 
 import create from './create.js';
 import get from './get.js';
+import _import from './import.js';
 import update from './update.js';
 
 export default {
@@ -22,6 +23,7 @@ export default {
     yargs
       .command(create)
       .command(get)
+      .command(_import)
       .command(update)
       .demandCommand(1)
       .usage('$0 service')

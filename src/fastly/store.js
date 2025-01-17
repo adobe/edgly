@@ -245,6 +245,11 @@ function readVcls(service) {
 function writeDictionaries(dictionaries) {
   const currentFiles = asMap(globSync(path.join(DIR_DICTIONARIES, '*.ini')), (f) => [f, {}]);
 
+  if (dictionaries?.length > 0) {
+    // ensure the folder is present
+    fs.mkdirSync(DIR_DICTIONARIES, { recursive: true });
+  }
+
   for (const dict of dictionaries) {
     const { write_only } = dict;
     const filename = write_only ? `${PRIVATE_DICT_PREFIX}${dict.name}.ini` : `${dict.name}.ini`;
@@ -264,13 +269,13 @@ function writeDictionaries(dictionaries) {
         console.debug(`- Dictionary ${dictPath} (private, NOT OVERWRITTEN)`);
         // TODO: compare dictionary digest to detect any changes.
         //       need to write digest locally on every 'service update' to keep track of it
-        if (storedDict.items.length !== dict.info.item_count) {
+        if (dict.info && storedDict.items.length !== dict.info.item_count) {
           console.warn(`\nWarning: Private dictionary '${dict.name}' seems to be modified on Fastly side,`);
           console.warn(
             `         found different number of entries: Local ${storedDict.items.length} vs. Fastly ${dict.info.item_count}.`,
           );
           console.warn('         However, the new/changed entries cannot be read back from Fastly.');
-          if (dict.info.last_updated) {
+          if (dict.info?.last_updated) {
             console.warn(`         Last updated in Fastly: ${dict.info.last_updated}`);
           }
         }
@@ -285,12 +290,15 @@ function writeDictionaries(dictionaries) {
     if (write_only) {
       // private dicts get special handling because we can't read their items from Fastly
       file.writeLn(`# Private (write-only) dictionary '${dict.name}'`);
-      if (dict.info.last_updated) {
+      if (dict.info?.last_updated) {
         file.writeLn(`# last_updated: ${dict.info.last_updated}`);
       }
-      file.writeLn(`# item_count: ${dict.info.item_count}`);
-      file.writeLn(`# digest: ${dict.info.digest}`);
-
+      if (dict.info?.item_count) {
+        file.writeLn(`# item_count: ${dict.info.item_count}`);
+      }
+      if (dict.info?.digest) {
+        file.writeLn(`# digest: ${dict.info.digest}`);
+      }
       file.writeLn();
       file.writeLn('# WHY IS THIS EMPTY?');
       file.writeLn('# This dictionary is write-only. Entries cannot be read back from Fastly.');
@@ -301,7 +309,7 @@ function writeDictionaries(dictionaries) {
       file.writeLn("# next deployment using e.g. 'fastly service update'.");
 
       if (isNew) {
-        console.warn(`\n Private dictionary '${dict.name}' has ${dict.info.item_count} unknown entries.`);
+        console.warn(`\n Private dictionary '${dict.name}' has ${dict.info?.item_count} unknown entries.`);
         console.warn('         Private entries cannot be read from Fastly. Please manually identify and add');
         console.warn('         the entries in the file using environment variable replacement: KEY="${{VAR}}"');
       }

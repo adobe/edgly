@@ -315,7 +315,6 @@ function writeDictionaries(dictionaries) {
       }
     }
 
-    file.writeLn();
     // write items sorted by key (for stable roundtripping)
     for (const item of sortAlpha(dict.items, (a) => a.item_key)) {
       file.writeLn(`${item.item_key}="${item.item_value}"`);

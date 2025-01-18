@@ -10,9 +10,13 @@
  * governing permissions and limitations under the License.
  */
 
-import { asMap, sortAlpha } from '../util.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { asMap, openFile, sortAlpha } from '../util.js';
 
 const DIVIDER = '# ===================================================================';
+const DIR_TESTS = 'tests';
+const FIDDLE_TESTS = 'fiddle.http';
 
 function snippetsToFiddleSrc(snippets) {
   return snippets
@@ -250,5 +254,48 @@ export class FastlyFiddleManager {
     fiddleOriginsToBackends(fiddle, service);
 
     return service;
+  }
+
+  writeFiddleTests(fiddle, service) {
+    if (!Array.isArray(fiddle.requests)) {
+      return;
+    }
+
+    // ensure test folder is present
+    fs.mkdirSync(DIR_TESTS, { recursive: true });
+
+    const file = openFile(path.join(DIR_TESTS, FIDDLE_TESTS), 'w');
+
+    const domain = service.domains[0]?.name;
+
+    file.writeLn('---');
+    file.writeLn(`host: <%= Deno.env.get('HOST') || 'https://${domain}' %>`);
+    file.writeLn('---');
+    file.writeLn();
+
+    for (const req of fiddle.requests) {
+      file.writeLn('###');
+      file.writeLn(`${req.method} ${req.path}`);
+      if (req.headers) {
+        file.writeLn(req.headers);
+      }
+      if (req.body) {
+        file.writeLn();
+        file.writeLn(req.body);
+      }
+      file.writeLn();
+      if (req.tests) {
+        file.writeLn(req.tests);
+      }
+
+      if (!req.tests?.endsWith('\n')) {
+        file.writeLn();
+      }
+      file.writeLn();
+    }
+
+    file.writeLn('###');
+    file.writeLn();
+    file.close();
   }
 }

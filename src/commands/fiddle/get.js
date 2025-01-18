@@ -62,6 +62,8 @@ export default {
 
     writeService(service);
 
+    fiddleMgr.writeFiddleTests(fiddle.fiddle, service);
+
     console.debug('\nSuccessfully written latest Fiddle version.');
 
     // TODO: unnecessary when getting Fiddle: Warning: Environment variable not found: LOG_HTTPS_HEADER_VALUE

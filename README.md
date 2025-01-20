@@ -19,7 +19,7 @@ while still being a connected to version controlled configuration.
 * Variable replacement for secrets and other dynamic configuration in all places: `${{VAR}}`
 * Automatic testing of services using HTTP test framework leveraging `*.http` files.
 
-Fastly is a service and trademark by [Fastly, Inc.](https://www.fastly.com).
+Fastly is a service and trademark by [Fastly, Inc.](https://www.fastly.com)
 
 ## Installation
 

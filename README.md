@@ -1,12 +1,12 @@
 ## @adobe/fastly-dev
 
-> Tool enabling GitOps and CI/CD for Fastly VCL services
+> Command line tool to boost Fastly VCL service development
 ---
 
-Enables version control for Fastly VCL services with these features:
+Enables version control for [Fastly™️ VCL services](https://www.fastly.com/documentation/guides/vcl/) with these features:
 
-* Syncing between a local version controlled folder and a Fastly service.
-* Syncing with Fiddles to develop VCL snippets
+* Syncing between a local version controlled folder and a [Fastly™️ VCL service](https://www.fastly.com/documentation/guides/vcl/)
+* Syncing with [Fiddles](https://fiddle.fastly.dev) to develop VCL snippets
 while still being a connected to version controlled configuration.
 * File mapping:
   * Service configuration: `service.json`
@@ -17,7 +17,9 @@ while still being a connected to version controlled configuration.
   * ACLs: `acl.json`
 * Detects secrets to prevent accidental commits.
 * Variable replacement for secrets and other dynamic configuration in all places: `${{VAR}}`
-* HTTP request test framework using `*.http` files.
+* Automatic testing of services using HTTP test framework leveraging `*.http` files.
+
+Fastly is a service and trademark by [Fastly, Inc.](https://www.fastly.com).
 
 ## Installation
 
@@ -40,7 +42,7 @@ npm install -g @adobe/fastly-dev
 USAGE
 fastly-dev <command> [flags]
 
-Tool enabling GitOps and CI/CD for Fastly VCL services
+Boost Fastly™️ VCL service development
 
 COMMANDS
   service             Fastly VCL service commands
@@ -50,11 +52,9 @@ COMMANDS
   shell-completion    Print completion script for .bashrc or .zshrc
 
 GLOBAL FLAGS
-  -c, --config     Configuration file      [string] [default: "fastly-dev.yaml"]
-  -t, --api-token  Fastly API Token                                     [string]
-  -d, --dry-run    Do not make any changes                             [boolean]
-  -v, --verbose    Verbose output                                      [boolean]
-  -h, --help       Show help                                           [boolean]
+  -c, --config   Configuration file        [string] [default: "fastly-dev.yaml"]
+  -v, --verbose  Verbose output                                        [boolean]
+  -h, --help     Show help                                             [boolean]
 
   Flags can be provided as environment variables prefixed with FASTLY_DEV_
   Example: --api-token becomes FASTLY_DEV_API_TOKEN.

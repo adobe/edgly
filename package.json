@@ -1,7 +1,7 @@
 {
   "name": "@adobe/fastly-dev",
   "version": "0.0.1",
-  "description": "Tool enabling GitOps and CI/CD for Fastly VCL services",
+  "description": "Command line tool to boost Fastly VCL service development",
   "main": "src/index.js",
   "type": "module",
   "bin": {

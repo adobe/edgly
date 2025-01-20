@@ -44,7 +44,7 @@ await yargs
   .prologue('')
   .usage('$0 <command> [flags]')
   .usage('')
-  .usage('Tool enabling GitOps and CI/CD for Fastly VCL services')
+  .usage('Boost Fastly™️ VCL service development')
   .epilogue('  Flags can be provided as environment variables prefixed with FASTLY_DEV_')
   .epilogue('  Example: --api-token becomes FASTLY_DEV_API_TOKEN.')
   .epilogue('')

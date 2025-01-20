@@ -33,7 +33,8 @@ export default {
           default: 'service-json',
         },
       })
-      .options(SHARED_OPTS.secretsMode);
+      .options(SHARED_OPTS.secretsMode)
+      .options(SHARED_OPTS.dryRun);
   },
   handler: (argv) => {
     let service;

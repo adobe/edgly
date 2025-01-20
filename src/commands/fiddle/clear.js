@@ -31,7 +31,8 @@ export default {
         type: 'string',
         describe: 'URL or ID of Fastly Fiddle',
       })
-      .options(SHARED_OPTS.force);
+      .options(SHARED_OPTS.force)
+      .options(SHARED_OPTS.dryRun);
   },
   handler: async (argv) => {
     if (argv.dryRun) {

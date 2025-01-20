@@ -12,11 +12,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { asMap, openFile, sortAlpha } from '../util.js';
+import { HttpTest, parseHttpTestFile, writeHttpTestFile } from '../test/parser.js';
+import { asMap, sortAlpha } from '../util.js';
 
 const DIVIDER = '# ===================================================================';
-const DIR_TESTS = 'tests';
-const FIDDLE_TESTS = 'fiddle.http';
 
 function snippetsToFiddleSrc(snippets) {
   return snippets
@@ -256,46 +255,26 @@ export class FastlyFiddleManager {
     return service;
   }
 
-  writeFiddleTests(fiddle, service) {
+  readFiddleTests(file, fiddle) {
+    if (fs.existsSync(file)) {
+      const { tests } = parseHttpTestFile(file);
+      fiddle.requests = tests.map((t) => t.toFiddleTest(t));
+    }
+  }
+
+  writeFiddleTests(file, fiddle, service) {
     if (!Array.isArray(fiddle.requests)) {
       return;
     }
 
-    // ensure test folder is present
-    fs.mkdirSync(DIR_TESTS, { recursive: true });
+    // ensure intermediary folders are present
+    fs.mkdirSync(path.dirname(file), { recursive: true });
 
-    const file = openFile(path.join(DIR_TESTS, FIDDLE_TESTS), 'w');
+    const httpTests = fiddle.requests.map((req) => HttpTest.fromFiddleTest(req));
 
     const domain = service.domains[0]?.name;
+    const meta = `host: <%= Deno.env.get('HOST') || 'https://${domain}' %>`;
 
-    file.writeLn('---');
-    file.writeLn(`host: <%= Deno.env.get('HOST') || 'https://${domain}' %>`);
-    file.writeLn('---');
-    file.writeLn();
-
-    for (const req of fiddle.requests) {
-      file.writeLn('###');
-      file.writeLn(`${req.method} ${req.path}`);
-      if (req.headers) {
-        file.writeLn(req.headers);
-      }
-      if (req.body) {
-        file.writeLn();
-        file.writeLn(req.body);
-      }
-      file.writeLn();
-      if (req.tests) {
-        file.writeLn(req.tests);
-      }
-
-      if (!req.tests?.endsWith('\n')) {
-        file.writeLn();
-      }
-      file.writeLn();
-    }
-
-    file.writeLn('###');
-    file.writeLn();
-    file.close();
+    writeHttpTestFile(file, httpTests, meta);
   }
 }

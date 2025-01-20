@@ -17,6 +17,7 @@ import { SHARED_OPTS } from '../../opts.js';
 
 export default {
   command: 'update <url>',
+  aliases: ['up'],
   describe: 'Update fiddle',
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
@@ -31,13 +32,16 @@ export default {
         type: 'string',
         describe: 'URL or ID of Fastly Fiddle',
       })
-      .options(SHARED_OPTS.includeSecrets);
+      .options(SHARED_OPTS.includeSecrets)
+      .options(SHARED_OPTS.dryRun)
+      .options(SHARED_OPTS.testFile);
   },
   handler: async (argv) => {
     const service = readService('production');
 
     const fiddleMgr = new FastlyFiddleManager();
     const fiddle = fiddleMgr.serviceToFiddle(service, { includeSecrets: argv.includeSecrets });
+    fiddleMgr.readFiddleTests(argv.testFile, fiddle);
 
     if (argv.dryRun) {
       console.log('Dry run. Not updating fiddle.');

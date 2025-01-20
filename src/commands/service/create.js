@@ -36,7 +36,8 @@ export default {
         describe: 'Environment to create',
         default: 'production',
       }))
-      .options(SHARED_OPTS.apiToken);
+      .options(SHARED_OPTS.apiToken)
+      .options(SHARED_OPTS.dryRun);
   },
 
   handler: async (argv) => {

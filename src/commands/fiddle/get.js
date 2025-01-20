@@ -33,7 +33,9 @@ export default {
         describe: 'URL or ID of Fastly Fiddle',
       })
       .options(SHARED_OPTS.secretsMode)
-      .options(SHARED_OPTS.includeSecrets);
+      .options(SHARED_OPTS.includeSecrets)
+      .options(SHARED_OPTS.dryRun)
+      .options(SHARED_OPTS.testFile);
   },
   handler: async (argv) => {
     const fiddleApi = new FastlyFiddleApi();
@@ -62,7 +64,7 @@ export default {
 
     writeService(service);
 
-    fiddleMgr.writeFiddleTests(fiddle.fiddle, service);
+    fiddleMgr.writeFiddleTests(argv.testFile, fiddle.fiddle, service);
 
     console.debug('\nSuccessfully written latest Fiddle version.');
 

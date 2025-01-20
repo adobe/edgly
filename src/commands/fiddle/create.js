@@ -25,13 +25,18 @@ export default {
       .usage('')
       .usage('Create a new Fastly VCL fiddle from the local service configuration');
 
-    yargs.options(SHARED_OPTS.includeSecrets);
+    // biome-ignore format: normal yargs style
+    yargs
+      .options(SHARED_OPTS.includeSecrets)
+      .options(SHARED_OPTS.testFile)
+      .options(SHARED_OPTS.dryRun);
   },
   handler: async (argv) => {
     const service = readService('production');
 
     const fiddleMgr = new FastlyFiddleManager();
     const fiddle = fiddleMgr.serviceToFiddle(service, { includeSecrets: argv.includeSecrets });
+    fiddleMgr.readFiddleTests(argv.testFile, fiddle);
 
     if (argv.dryRun) {
       console.log('Dry run. Not creating fiddle.');

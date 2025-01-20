@@ -58,7 +58,8 @@ export default {
           describe: 'Activate service version after update',
         }
       })
-      .options(SHARED_OPTS.apiToken);
+      .options(SHARED_OPTS.apiToken)
+      .options(SHARED_OPTS.dryRun);
   },
   handler: async (argv) => {
     const { env } = argv;

@@ -3,10 +3,10 @@
 > Tool enabling GitOps and CI/CD for Fastly VCL services
 ---
 
-Enables version control for Fastly VCL services.
+Enables version control for Fastly VCL services with these features:
 
-* Supports syncing between a local version controlled folder and a Fastly service.
-* Supports syncing with Fiddles to develop VCL snippets
+* Syncing between a local version controlled folder and a Fastly service.
+* Syncing with Fiddles to develop VCL snippets
 while still being a connected to version controlled configuration.
 * File mapping:
   * Service configuration: `service.json`
@@ -16,7 +16,8 @@ while still being a connected to version controlled configuration.
   * Private dictionaries: `dictionaries/private.*.ini`
   * ACLs: `acl.json`
 * Detects secrets to prevent accidental commits.
-* Supports variable replacement for secrets and other dynamic configuration in all places: `${{VAR}}`
+* Variable replacement for secrets and other dynamic configuration in all places: `${{VAR}}`
+* HTTP request test framework using `*.http` files.
 
 ## Installation
 
@@ -44,6 +45,7 @@ Tool enabling GitOps and CI/CD for Fastly VCL services
 COMMANDS
   service             Fastly VCL service commands
   fiddle              Fastly VCL fiddle commands
+  test                Run HTTP request tests
   version             Show version info
   shell-completion    Print completion script for .bashrc or .zshrc
 
@@ -118,6 +120,135 @@ Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it all
    fastly-dev service update --activate
    ```
 4. If something goes wrong, revert to old version using the Fastly UI
+
+## Test framework
+
+The test framework supports running HTTP requests against your domain (Fastly service) and is compatible with Fastly Fiddle Tests. This allows sync and copy-and-paste between automated tests and Fastly Fiddles. It requires separate installation of the [tepi](https://tepi.deno.dev/) test tool, which is [Deno](https://deno.land/) based.
+
+### Install tepi
+
+Test execution requires installation of [tepi](https://tepi.deno.dev/):
+1. Install [deno](https://deno.land/)
+2. Install [tepi](https://tepi.deno.dev/)
+
+   ```
+   deno install --reload  --allow-read --allow-env --allow-net --allow-run -f -n tepi https://tepi.deno.dev/src/cli.ts
+   ```
+
+### Test case syntax
+
+1. Tests are defined in `*.http` files in the [tests](tests/) folder
+2. Each file can have multiple tests
+3. Test format is the [tepi](https://tepi.deno.dev/) one, but supporting [Fastly Fiddle Tests](https://www.fastly.com/documentation/reference/tools/fiddle/testing/) in the response assertions
+4. Supported Fiddle test assertions are documented in [TESTS.md](TESTS.md)
+   - Note: Technically the Tepi assertions are also supported. However, it is recommended to stick to Fastly Fiddle Tests only.
+5. Syntax
+   ```
+   ---
+   <file metadata> (optional)
+   ---
+
+   ###
+   ---
+   <test metadata> (optional)
+   ---
+   POST /path
+   <headers>  (optional)
+
+   <body> (optional)
+
+   <assertions>
+
+   ###
+   ```
+
+#### Example test file
+
+Example `*.http` file with two tests:
+
+```
+---
+host: <%= Deno.env.get('HOST') || 'https://example.com' %>
+---
+
+###
+GET /status=200
+
+clientFetch.status is 200
+clientFetch.bodyPreview is ""
+
+
+###
+---
+id: example
+---
+POST /status=200
+Header: value
+
+{"request": "body"}
+
+clientFetch.status is 200
+```
+
+### Run tests
+
+Run tests against production:
+```
+fastly-dev test
+```
+
+Custom host:
+```
+HOST=https://thumbnails.findmy.media  fastly-dev test
+```
+
+Run specific test file:
+```
+fastly-dev test tests/image.http
+```
+
+Run individual test:
+```
+# :5 = line number where test starts, the ### line
+fastly-dev test tests/image.http:5
+```
+
+### Visual Studio Code test support
+
+The [tepi VS Code extension](https://marketplace.visualstudio.com/items?itemName=jupegarnica.tepi) can be supported, for syntax highlighting and test execution within the IDE.
+
+#### VS Code setup
+
+1. Add a file named `tepi` in the root of your VS Code workspace
+   ```sh
+   #!/bin/sh
+   fastly-dev test "$@"
+   ```
+2. Ensure the file is executable
+   ```sh
+   chmod u+x tepi
+   ```
+3. Add this to the VS Code workspace settings to prefer it to use this executable (come first on PATH):
+   ```json
+     "terminal.integrated.env.osx": {
+       "PATH": ".:${env:PATH}"
+     }
+   ```
+4. Reload window or restart VS Code to apply PATH change
+5. Commit both `tepi` and `.vscode/settings.json` files to version control
+
+#### VS Code test development flow
+
+Inside VS Code you can now run tests individually:
+
+1. Install [tepi extension for VS Code](https://marketplace.visualstudio.com/items?itemName=jupegarnica.tepi)
+2. Open `tests/*.http` files in VS Code
+3. Edit tests
+4. Run test using the extension
+   1. Run single test: click `run` above test case
+   2. Run single test with full request/response output: click `run -d`
+   3. Run all tests in file: click `run file`
+   4. Run all tests: run `tepi` in terminal
 
 ## Configuration
 

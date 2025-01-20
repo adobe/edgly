@@ -13,6 +13,7 @@
 
 import fiddle from './commands/fiddle/fiddle.js';
 import service from './commands/service/service.js';
+import test from './commands/test.js';
 import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
 import yargsAhoy from './yargs-ahoy.js';
@@ -21,6 +22,7 @@ const yargs = yargsAhoy();
 await yargs
   .command(service)
   .command(fiddle)
+  .command(test)
   .command(version)
   .completion('shell-completion', 'Print completion script for .bashrc or .zshrc')
   .version(false)

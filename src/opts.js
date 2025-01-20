@@ -30,16 +30,6 @@ export const GLOBAL_OPTS = {
       return global.config;
     },
   },
-  'api-token': {
-    alias: 't',
-    type: 'string',
-    describe: 'Fastly API Token',
-  },
-  'dry-run': {
-    alias: 'd',
-    type: 'boolean',
-    describe: 'Do not make any changes',
-  },
   verbose: {
     alias: 'v',
     type: 'boolean',
@@ -59,6 +49,9 @@ export const SHARED_ARGS = {};
 export const SHARED_OPTS = {
   apiToken: {
     'api-token': {
+      alias: 't',
+      type: 'string',
+      describe: 'Fastly API Token',
       demandOption: 'Set Fastly API Token using --api-token or FASTLY_DEV_API_TOKEN environment variable.',
     },
   },
@@ -100,6 +93,20 @@ export const SHARED_OPTS = {
       alias: 'f',
       type: 'boolean',
       describe: 'Force operation without prompting for confirmation',
+    },
+  },
+  dryRun: {
+    'dry-run': {
+      alias: 'd',
+      type: 'boolean',
+      describe: 'Do not make any changes',
+    },
+  },
+  testFile: {
+    'test-file': {
+      type: 'string',
+      describe: 'File with tests to sync',
+      default: 'tests/fiddle.http',
     },
   },
 };

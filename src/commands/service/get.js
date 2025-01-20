@@ -37,7 +37,8 @@ export default {
         }),
       )
       .options(SHARED_OPTS.secretsMode)
-      .options(SHARED_OPTS.apiToken);
+      .options(SHARED_OPTS.apiToken)
+      .options(SHARED_OPTS.dryRun);
   },
   handler: async (argv) => {
     let id;

@@ -30,17 +30,17 @@ npm install -g @adobe/edgly
 ## Usage
 
 ```
-                           _       _       
-                   ___  __| | __ _| |_   _ 
-                  / _ \/ _` |/ _` | | | | |
-                 |  __/ (_| | (_| | | |_| |
-                  \___|\__,_|\__, |_|\__, |
-                             |___/   |___/ 
+                             _       _       
+                     ___  __| | __ _| |_   _ 
+                    / _ \/ _` |/ _` | | | | |
+                   |  __/ (_| | (_| | | |_| |
+                    \___|\__,_|\__, |_|\__, |
+                               |___/   |___/ 
 
-                https://github.com/adobe/edgly
+                  https://github.com/adobe/edgly
 
 USAGE
-edgly <command> [options]
+  edgly <command> [OPTS]
 
 Boost Fastly™️ VCL service development
 

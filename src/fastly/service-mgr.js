@@ -358,7 +358,7 @@ export class FastlyServiceManager {
     }
     if (unsupported.length > 0) {
       console.warn('\nWarning: Unsupported features found:', unsupported.join(', '));
-      console.warn('         These are not fully handled by fastly-dev.');
+      console.warn('         These are not fully handled by edgly.');
     }
   }
 }

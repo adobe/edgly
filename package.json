@@ -1,11 +1,11 @@
 {
-  "name": "@adobe/fastly-dev",
+  "name": "@adobe/edgly",
   "version": "0.0.1",
   "description": "Command line tool to boost Fastly VCL service development",
   "main": "src/index.js",
   "type": "module",
   "bin": {
-    "fastly-dev": "src/index.js"
+    "edgly": "src/index.js"
   },
   "scripts": {
     "test": "c8 mocha",
@@ -58,10 +58,10 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adobe/fastly-dev"
+    "url": "https://github.com/adobe/edgly"
   },
   "bugs": {
-    "url": "https://github.com/adobe/fastly-dev/issues"
+    "url": "https://github.com/adobe/edgly/issues"
   },
-  "homepage": "https://github.com/adobe/fastly-dev#readme"
+  "homepage": "https://github.com/adobe/edgly#readme"
 }

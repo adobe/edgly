@@ -230,7 +230,7 @@ export default function yargsAhoy(processArgs, cwd, parentRequire) {
   return yargs
     .updateStrings({
       'Commands:': COMMANDS,
-      'Options:': chalk.bold('GLOBAL FLAGS'),
+      'Options:': chalk.bold('GLOBAL OPTIONS'),
       'Positionals:': chalk.bold('ARGUMENTS'),
     })
     .fail(onFail)

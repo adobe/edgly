@@ -27,16 +27,13 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-      # TODO: fix and enable sizewatcher again
-      #       Error: Cloning into '/tmp/tmp-1934-Ul9M1qnV8ucx/before'...
-      #       fatal: could not read Username for 'https://github.com': No such device or address
-      # - run: npx @adobe/sizewatcher
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npx @adobe/sizewatcher
+        env:
+          GITHUB_TOKEN: ${{ secrets.ADOBE_BOT_GITHUB_TOKEN }}
       - name: Semantic Release (Dry Run)
         run: npm run semantic-release-dry
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ADOBE_BOT_GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
   release:
@@ -55,5 +52,5 @@ jobs:
       - run: npm ci
       - run: npm run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ADOBE_BOT_GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}

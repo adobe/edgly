@@ -75,7 +75,7 @@ export default {
 
       if (!id) {
         console.error(`Error: No service ID found for environment '${env}' in configuration file.`);
-        console.error("       Use 'fastly-dev service create' to create a new service or environment.");
+        console.error("       Use 'edgly service create' to create a new service or environment.");
         process.exit(1);
       }
     }
@@ -89,7 +89,7 @@ export default {
     service.comment =
       argv.comment ||
       getLastGitCommit() ||
-      `Added by ${os.userInfo().username} via fastly-dev at ${new Date().toLocaleString('en-US')}`;
+      `Added by ${os.userInfo().username} via edgly at ${new Date().toLocaleString('en-US')}`;
 
     if (argv.dryRun) {
       console.log('\nDry run. Not making changes. Would otherwise:');

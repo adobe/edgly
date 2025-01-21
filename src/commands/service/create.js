@@ -58,7 +58,7 @@ export default {
     }
 
     const name = argv.name || `${service.name} (${env})`;
-    const comment = `Created by fastly-dev. Copy of ${service.service_id}`;
+    const comment = `Created by edgly. Copy of ${service.service_id}`;
 
     if (argv.dryRun) {
       console.log('\nDry run. Not making changes. Would otherwise:');

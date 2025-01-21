@@ -1,4 +1,4 @@
-## @adobe/fastly-dev
+## @adobe/edgly
 
 > Command line tool to boost Fastly VCL service development
 ---
@@ -24,23 +24,23 @@ Fastly is a service and trademark by [Fastly, Inc.](https://www.fastly.com)
 ## Installation
 
 ```sh
-npm install -g @adobe/fastly-dev
+npm install -g @adobe/edgly
 ```
 
 ## Usage
 
 ```
-   __           _   _                 _            
-  / _| __ _ ___| |_| |_   _        __| | _____   __
- | |_ / _` / __| __| | | | |_____ / _` |/ _ \ \ / /
- |  _| (_| \__ \ |_| | |_| |_____| (_| |  __/\ V / 
- |_|  \__,_|___/\__|_|\__, |      \__,_|\___| \_/  
-                      |___/                        
+                           _       _       
+                   ___  __| | __ _| |_   _ 
+                  / _ \/ _` |/ _` | | | | |
+                 |  __/ (_| | (_| | | |_| |
+                  \___|\__,_|\__, |_|\__, |
+                             |___/   |___/ 
 
-                https://github.com/adobe/fastly-dev
+                https://github.com/adobe/edgly
 
 USAGE
-fastly-dev <command> [flags]
+edgly <command> [options]
 
 Boost Fastly™️ VCL service development
 
@@ -51,13 +51,13 @@ COMMANDS
   version             Show version info
   shell-completion    Print completion script for .bashrc or .zshrc
 
-GLOBAL FLAGS
-  -c, --config   Configuration file        [string] [default: "fastly-dev.yaml"]
+GLOBAL OPTIONS
+  -c, --config   Configuration file             [string] [default: "edgly.yaml"]
   -v, --verbose  Verbose output                                        [boolean]
   -h, --help     Show help                                             [boolean]
 
-  Flags can be provided as environment variables prefixed with FASTLY_DEV_
-  Example: --api-token becomes FASTLY_DEV_API_TOKEN.
+  Options can also be set as environment variables prefixed with EDGLY_.
+  Example: --api-token becomes EDGLY_API_TOKEN.
 ```
 
 ### Initial setup for a Fastly service
@@ -67,7 +67,7 @@ GLOBAL FLAGS
 3. Inside a git repo (one repo per Fastly service recommended)
 4. Fetch the service configuration
    ```sh
-   fastly-dev service get <service-id>
+   edgly service get <service-id>
    ```
 5. Review for any secrets detected
 6. Commit the newly added files
@@ -77,7 +77,7 @@ GLOBAL FLAGS
 
 A stage environment allows to safely test changes in Fastly before deploying to the production service.
 
-1. Add stage environment to `fastly-dev.yaml` and map the domain names to the ones to be used for stage:
+1. Add stage environment to `edgly.yaml` and map the domain names to the ones to be used for stage:
    ```yaml
    env:
      stage:
@@ -86,9 +86,9 @@ A stage environment allows to safely test changes in Fastly before deploying to 
    ```
 2. Create stage service:
    ```sh
-   fastly-dev service create --env stage
+   edgly service create --env stage
    ```
-3. This will store the new service id in `fastly-dev.yaml`. Commit this file.
+3. This will store the new service id in `edgly.yaml`. Commit this file.
 
 ### Develop changes using Fiddles
 
@@ -96,14 +96,14 @@ Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it all
 
 1. Create a new fiddle:
    ```sh
-   fastly-dev fiddle create
+   edgly fiddle create
    ```
 2. Click the printed link to open the Fiddle
 3. Develop the VCL code in the Fiddle
 4. Copy any tests needed for the work into the Fiddle
 5. When done, pull the changes from the Fiddle:
    ```sh
-   fastly-dev fiddle get <fiddle-url>
+   edgly fiddle get <fiddle-url>
    ```
 6. Review the changes and commit
 
@@ -111,13 +111,13 @@ Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it all
 
 1. Deploy to stage:
    ```sh
-   fastly-dev service update --env stage --activate
+   edgly service update --env stage --activate
    ```
 3. Wait for Fastly changes to rollout, usually less than 30 seconds
 2. Run any tests against stage
 3. If successful, deploy to production:
    ```sh
-   fastly-dev service update --activate
+   edgly service update --activate
    ```
 4. If something goes wrong, revert to old version using the Fastly UI
 
@@ -194,23 +194,23 @@ clientFetch.status is 200
 
 Run tests against production:
 ```
-fastly-dev test
+edgly test
 ```
 
 Custom host:
 ```
-HOST=https://thumbnails.findmy.media  fastly-dev test
+HOST=https://thumbnails.findmy.media  edgly test
 ```
 
 Run specific test file:
 ```
-fastly-dev test tests/image.http
+edgly test tests/image.http
 ```
 
 Run individual test:
 ```
 # :5 = line number where test starts, the ### line
-fastly-dev test tests/image.http:5
+edgly test tests/image.http:5
 ```
 
 ### Visual Studio Code test support
@@ -222,7 +222,7 @@ The [tepi VS Code extension](https://marketplace.visualstudio.com/items?itemName
 1. Add a file named `tepi` in the root of your VS Code workspace
    ```sh
    #!/bin/sh
-   fastly-dev test "$@"
+   edgly test "$@"
    ```
 2. Ensure the file is executable
    ```sh
@@ -252,7 +252,7 @@ Inside VS Code you can now run tests individually:
 
 ## Configuration
 
-The tool uses a `fastly-dev.yaml` file in the current directory to store environment specific settings. The file is expected to be version controlled and shared with the team.
+The tool uses a `edgly.yaml` file in the current directory to store environment specific settings. The file is expected to be version controlled and shared with the team.
 
 Full configuration file example:
 

@@ -12,7 +12,7 @@
 
 import { Config } from './config.js';
 
-const DEFAULT_CONFIG_FILE = 'fastly-dev.yaml';
+const DEFAULT_CONFIG_FILE = 'edgly.yaml';
 
 // turn off console.debug by default
 // and only turn it on below if -v/--verbose is set
@@ -52,7 +52,7 @@ export const SHARED_OPTS = {
       alias: 't',
       type: 'string',
       describe: 'Fastly API Token',
-      demandOption: 'Set Fastly API Token using --api-token or FASTLY_DEV_API_TOKEN environment variable.',
+      demandOption: 'Set Fastly API Token using --api-token or EDGLY_API_TOKEN environment variable.',
     },
   },
   env: {

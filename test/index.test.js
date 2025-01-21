@@ -11,9 +11,14 @@
  */
 
 import assert from 'node:assert/strict';
+import { exec } from 'node:child_process';
 
 describe('index', () => {
-  it('is true (placeholder test)', () => {
-    assert.ok(true);
+  it('edgly -h', (done) => {
+    exec('node src/index.js -h', (err, stdout, _stderr) => {
+      assert.ok(!err, err?.message);
+      assert.ok(stdout.includes('Boost Fastly™️ VCL service development'));
+      done();
+    });
   });
 });

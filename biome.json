@@ -38,6 +38,13 @@
       "include": ["test/**/*.js"],
       "javascript": {
         "globals": ["describe", "it"]
+      },
+      "linter": {
+        "rules": {
+          "style": {
+            "noDoneCallback": "off"
+          }
+        }
       }
     },
     {

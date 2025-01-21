@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import chalk from 'chalk';
 import { runTests } from '../test/runner.js';
 
 export default {
@@ -18,7 +19,7 @@ export default {
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
     yargs
-      .usage('$0 test [files...]')
+      .usage(chalk.yellow('  $0 test [OPTS] [files...]'))
       .usage('')
       .usage("Run HTTP request tests defined in *.http files.");
 

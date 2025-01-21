@@ -11,6 +11,7 @@
  */
 
 import { createRequire } from 'node:module';
+import chalk from 'chalk';
 
 const require = createRequire(import.meta.url);
 const pkgJson = require('../../package.json');
@@ -18,6 +19,13 @@ const pkgJson = require('../../package.json');
 export default {
   command: 'version',
   describe: 'Show version info',
+  builder: (yargs) => {
+    // biome-ignore format: normal yargs style
+    yargs
+      .usage(chalk.yellow('  $0 version'))
+      .usage('')
+      .usage("Run HTTP request tests defined in *.http files.");
+  },
   handler: () => {
     console.log('Version:', pkgJson.version);
     console.log('Node:', process.version);

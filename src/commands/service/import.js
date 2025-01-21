@@ -11,6 +11,7 @@
  */
 
 import fs from 'node:fs';
+import chalk from 'chalk';
 import { FastlyService } from '../../fastly/service.js';
 import { writeService } from '../../fastly/store.js';
 import { SHARED_OPTS } from '../../opts.js';
@@ -21,7 +22,7 @@ export default {
   describe: 'Import Fastly service',
   builder: (yargs) => {
     yargs
-      .usage('$0 service import <source>')
+      .usage(chalk.yellow('  $0 service import [OPTS] <source>'))
       .usage('')
       .usage('Import Fastly service from a service.json or other source.');
 

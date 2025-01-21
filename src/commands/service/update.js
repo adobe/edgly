@@ -11,6 +11,7 @@
  */
 
 import { execSync } from 'node:child_process';
+import chalk from 'chalk';
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { readService } from '../../fastly/store.js';
 import { SHARED_OPTS, override } from '../../opts.js';
@@ -30,7 +31,7 @@ export default {
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
     yargs
-      .usage('$0 service update')
+      .usage(chalk.yellow('  $0 service update [OPTS]'))
       .usage('')
       .usage('Update Fastly service with configuration from current folder.')
       .usage('Creates a new service version by default.')

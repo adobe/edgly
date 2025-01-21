@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import chalk from 'chalk';
 import clear from './clear.js';
 import create from './create.js';
 import get from './get.js';
@@ -26,7 +27,7 @@ export default {
       .command(update)
       .command(clear)
       .demandCommand(1)
-      .usage('$0 fiddle')
+      .usage(chalk.yellow('  $0 fiddle <command>'))
       .usage('')
       .usage('Commands to sync a local service configuration with a Fastly VCL Fiddle');
   },

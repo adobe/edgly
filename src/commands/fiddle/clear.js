@@ -12,6 +12,7 @@
 
 import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
+import chalk from 'chalk';
 import { FastlyFiddleApi } from '../../fastly/api/fiddle-api.js';
 import { SHARED_OPTS } from '../../opts.js';
 
@@ -21,7 +22,7 @@ export default {
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
     yargs
-      .usage('$0 fiddle clear <url>')
+      .usage(chalk.yellow('  $0 fiddle clear [OPTS] <url>'))
       .usage('')
       .usage('Clears a Fastly VCL fiddle. Fiddles cannot be deleted, but all code removed.');
 

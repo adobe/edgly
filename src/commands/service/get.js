@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import chalk from 'chalk';
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { writeService } from '../../fastly/store.js';
 import { SHARED_OPTS, override } from '../../opts.js';
@@ -20,7 +21,7 @@ export default {
   describe: 'Download Fastly service to local configuration',
   builder: (yargs) => {
     yargs
-      .usage('$0 service get')
+      .usage(chalk.yellow('  $0 service get [OPTS]'))
       .usage('')
       .usage('Retrieve service configuration from Fastly and write to current folder.');
 

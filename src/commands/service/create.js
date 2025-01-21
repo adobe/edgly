@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import chalk from 'chalk';
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { readService } from '../../fastly/store.js';
 import { SHARED_OPTS, override } from '../../opts.js';
@@ -21,7 +22,7 @@ export default {
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
     yargs
-      .usage('$0 service create')
+      .usage(chalk.yellow('  $0 service create [OPTS]'))
       .usage('')
       .usage('Create new service in Fastly based on service configuration from current folder.')
       .usage('Use to create different environments (specify -e) or copies of the service.');

@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import chalk from 'chalk';
 import { FastlyFiddleApi } from '../../fastly/api/fiddle-api.js';
 import { FastlyFiddleManager } from '../../fastly/fiddle-mgr.js';
 import { readService } from '../../fastly/store.js';
@@ -22,9 +23,11 @@ export default {
   builder: (yargs) => {
     // biome-ignore format: normal yargs style
     yargs
-      .usage('$0 fiddle update <url>')
+      .usage(chalk.yellow('  $0 fiddle update [OPTS] <url>'))
       .usage('')
-      .usage('Update a Fastly VCL fiddle with the local service configuration');
+      .usage('Update a Fastly VCL fiddle with the local service configuration')
+      .usage('')
+      .usage('Alias: up');
 
     // biome-ignore format: normal yargs style
     yargs

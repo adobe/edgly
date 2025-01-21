@@ -11,6 +11,7 @@
  * governing permissions and limitations under the License.
  */
 
+import chalk from 'chalk';
 import fiddle from './commands/fiddle/fiddle.js';
 import service from './commands/service/service.js';
 import test from './commands/test.js';
@@ -33,16 +34,16 @@ await yargs
   .env('EDGLY')
   // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=edgly
   .prologue('')
-  .prologue('                           _       _       ')
-  .prologue('                   ___  __| | __ _| |_   _ ')
-  .prologue('                  / _ \\/ _` |/ _` | | | | |')
-  .prologue('                 |  __/ (_| | (_| | | |_| |')
-  .prologue('                  \\___|\\__,_|\\__, |_|\\__, |')
-  .prologue('                             |___/   |___/ ')
+  .prologue(chalk.yellow('                             _       _       '))
+  .prologue(chalk.yellow('                     ___  __| | __ _| |_   _ '))
+  .prologue(chalk.yellow('                    / _ \\/ _` |/ _` | | | | |'))
+  .prologue(chalk.yellow('                   |  __/ (_| | (_| | | |_| |'))
+  .prologue(chalk.yellow('                    \\___|\\__,_|\\__, |_|\\__, |'))
+  .prologue(chalk.yellow('                               |___/   |___/ '))
   .prologue('')
-  .prologue('                https://github.com/adobe/edgly')
+  .prologue(chalk.yellow('                  https://github.com/adobe/edgly'))
   .prologue('')
-  .usage('$0 <command> [options]')
+  .usage(chalk.yellow('  $0 <command> [OPTS]'))
   .usage('')
   .usage('Boost Fastly™️ VCL service development')
   .epilogue('  Options can also be set as environment variables prefixed with EDGLY_.')

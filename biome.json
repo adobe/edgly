@@ -1,4 +1,7 @@
 {
+  "files": {
+    "ignore": ["renovate.json"]
+  },
   "linter": {
     "rules": {
       "all": true,

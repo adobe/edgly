@@ -11,7 +11,7 @@
     "test": "c8 mocha",
     "lint": "biome check",
     "lint:fix": "biome check --write",
-    "lint-ci": "biome ci --reporter=github",
+    "lint-ci": "biome ci --reporter=github || biome check",
     "license-check": "license-check-and-add check",
     "license-check:fix": "license-check-and-add add -r $(date -u +%Y)",
     "semantic-release": "semantic-release",

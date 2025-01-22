@@ -77,7 +77,6 @@ GLOBAL OPTIONS
    ```
 5. Review for any secrets detected
 6. Commit the newly added files
-7. Then follow with [Development workflow](#development-workflow)
 
 ### Create a stage environment
 

@@ -63,5 +63,8 @@
   "bugs": {
     "url": "https://github.com/adobe/edgly/issues"
   },
-  "homepage": "https://github.com/adobe/edgly#readme"
+  "homepage": "https://github.com/adobe/edgly#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

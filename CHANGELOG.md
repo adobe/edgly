@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/adobe/edgly/compare/v1.1.3...v1.1.4) (2025-01-22)
+
+
+### Bug Fixes
+
+* readme improvements ([#14](https://github.com/adobe/edgly/issues/14)) ([4c90394](https://github.com/adobe/edgly/commit/4c9039408eade4b99357b4766d060fcc2a40895b))
+
 ## [1.1.3](https://github.com/adobe/edgly/compare/v1.1.2...v1.1.3) (2025-01-22)
 
 

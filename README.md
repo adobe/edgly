@@ -9,21 +9,22 @@
 
 ---
 
-Enables version control for [Fastly™️ VCL services](https://www.fastly.com/documentation/guides/vcl/) with these features:
+Enables version control for [Fastly™ VCL services](https://www.fastly.com/documentation/guides/vcl/) with these features:
 
-* Syncing between a local version controlled folder and a [Fastly™️ VCL service](https://www.fastly.com/documentation/guides/vcl/)
+* Syncing between a local version controlled folder and a [Fastly VCL service](https://www.fastly.com/documentation/guides/vcl/)
 * Syncing with [Fiddles](https://fiddle.fastly.dev) to develop VCL snippets
-while still being a connected to version controlled configuration.
+while still being a connected to version controlled configuration
 * File mapping:
   * Service configuration: `service.json`
   * VCL snippets: `snippets/*.vcl`
   * VCL files: `vcl/*.vcl`
+    * Note: files are not be supported in Fiddles
   * Dictionaries: `dictionaries/*.ini`
   * Private dictionaries: `dictionaries/private.*.ini`
   * ACLs: `acl.json`
-* Detects secrets to prevent accidental commits.
+* Detects secrets to prevent accidental commits
 * Variable replacement for secrets and other dynamic configuration in all places: `${{VAR}}`
-* Automatic testing of services using HTTP test framework leveraging `*.http` files.
+* Automatic testing of services using HTTP test framework leveraging `*.http` files
 
 Fastly is a service and trademark by [Fastly, Inc.](https://www.fastly.com)
 

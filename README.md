@@ -2,7 +2,7 @@
 
 > Command line tool to boost Fastly VCL service development
 
-![NPM Version](https://img.shields.io/npm/v/%40adobe%2Fedgly)
+[![NPM Version](https://img.shields.io/npm/v/%40adobe%2Fedgly)](https://www.npmjs.com/package/@adobe/edgly)
 [![GitHub license](https://img.shields.io/github/license/adobe/edgly.svg)](https://github.com/adobe/edgly/blob/main/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/adobe/edgly.svg)](https://github.com/adobe/edgly/issues)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/adobe/edgly/main.yml)](https://github.com/adobe/edgly/actions/workflows/main.yml)

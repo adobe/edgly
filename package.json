@@ -58,7 +58,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adobe/edgly"
+    "url": "git+https://github.com/adobe/edgly.git"
   },
   "bugs": {
     "url": "https://github.com/adobe/edgly/issues"

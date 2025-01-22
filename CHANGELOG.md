@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/adobe/edgly/compare/v1.1.2...v1.1.3) (2025-01-22)
+
+
+### Bug Fixes
+
+* link on npm badge ([7259eab](https://github.com/adobe/edgly/commit/7259eabe32deb0d3bcc761dc212e32a2cc96018c))
+
 ## [1.1.2](https://github.com/adobe/edgly/compare/v1.1.1...v1.1.2) (2025-01-22)
 
 

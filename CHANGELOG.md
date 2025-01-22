@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/adobe/edgly/compare/v1.1.1...v1.1.2) (2025-01-22)
+
+
+### Bug Fixes
+
+* build badge ([fe1a8a2](https://github.com/adobe/edgly/commit/fe1a8a245965b7957136b7d79a28ef5ee17c5eae))
+
 ## [1.1.1](https://github.com/adobe/edgly/compare/v1.1.0...v1.1.1) (2025-01-22)
 
 

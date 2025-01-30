@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/adobe/edgly/compare/v1.1.4...v1.1.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* partial npm audit fix for cross-spawn ([e4a9788](https://github.com/adobe/edgly/commit/e4a978829105c9cfcc75821253da6b8632be1710))
+
 ## [1.1.4](https://github.com/adobe/edgly/compare/v1.1.3...v1.1.4) (2025-01-22)
 
 

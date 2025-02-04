@@ -1,3 +1,13 @@
+## [1.1.9](https://github.com/adobe/edgly/compare/v1.1.8...v1.1.9) (2025-02-04)
+
+
+### Bug Fixes
+
+* disable yargs strict mode ([d7ad92e](https://github.com/adobe/edgly/commit/d7ad92e77d55fabab97fc5b0b658969596981f8a))
+* **docs:** better initial setup ([4316ab0](https://github.com/adobe/edgly/commit/4316ab0ff530c572244dd327870a11651e836aae))
+* **docs:** fix initial command description to include --id ([f2ae8ee](https://github.com/adobe/edgly/commit/f2ae8ee438fbf80677a7027b0bf768242c698472))
+* write service id in service get --id ([6d0a3fc](https://github.com/adobe/edgly/commit/6d0a3fc9e70b51967dca97e9b7c33e356d36bce6))
+
 ## [1.1.8](https://github.com/adobe/edgly/compare/v1.1.7...v1.1.8) (2025-02-04)
 
 

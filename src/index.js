@@ -29,7 +29,6 @@ await yargs
   .version(false)
   .demandCommand(1)
   .recommendCommands()
-  .strict()
   .options(GLOBAL_OPTS)
   .env('EDGLY')
   // ascii font from https://patorjk.com/software/taag/#p=display&f=Standard&t=edgly

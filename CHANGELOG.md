@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/adobe/edgly/compare/v1.1.5...v1.1.6) (2025-02-04)
+
+
+### Bug Fixes
+
+* include src/test in release package ([b9cde98](https://github.com/adobe/edgly/commit/b9cde98f8d4cd0b427199821f9e7010d1b831490))
+
 ## [1.1.5](https://github.com/adobe/edgly/compare/v1.1.4...v1.1.5) (2025-01-30)
 
 

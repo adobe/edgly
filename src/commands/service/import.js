@@ -55,6 +55,8 @@ export default {
 
     writeService(service);
 
+    global.config.set('env.production.id', service.service_id).write();
+
     console.debug(`\nSuccessfully written ${service.service_id} v${service.version}.`);
   },
 };

@@ -74,10 +74,16 @@ GLOBAL OPTIONS
 3. Inside a git repo (one repo per Fastly service recommended)
 4. Fetch the service configuration
    ```sh
-   edgly service get <service-id>
+   edgly service get --id <service-id>
    ```
 5. Review for any secrets detected
 6. Commit the newly added files
+
+7. It will store the `<service-id>` in a file named `edgly.yaml` and by default assume this to be the `production` environment.
+8. Further updates (pulls) from the service can be done using just
+```
+edgly service get
+```
 
 ### Create a stage environment
 

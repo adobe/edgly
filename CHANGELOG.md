@@ -1,3 +1,10 @@
+## [1.1.8](https://github.com/adobe/edgly/compare/v1.1.7...v1.1.8) (2025-02-04)
+
+
+### Bug Fixes
+
+* remove unused console.log in fiddle get ([66655fd](https://github.com/adobe/edgly/commit/66655fdcb3581005e13f3e97d4ef74f2059f1d19))
+
 ## [1.1.7](https://github.com/adobe/edgly/compare/v1.1.6...v1.1.7) (2025-02-04)
 
 

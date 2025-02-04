@@ -80,6 +80,11 @@ export default {
 
     writeService(service);
 
+    // write service id to config file if it was set by user and isn't in the file yet
+    if (argv.id && !global.config.env?.production?.id) {
+      global.config.set('env.production.id', argv.id).write();
+    }
+
     console.debug(`\nSuccessfully written ${service.service_id} v${service.version}.`);
   },
 };

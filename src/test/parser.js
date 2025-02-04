@@ -242,8 +242,6 @@ export function writeHttpTestFile(path, httpTests, meta) {
   }
 
   for (const test of httpTests) {
-    console.log(test);
-
     file.writeLn('###');
     if (test.meta) {
       file.writeLn('---');

@@ -76,14 +76,23 @@ GLOBAL OPTIONS
    ```sh
    edgly service get --id <service-id>
    ```
+   * Above will pull the `latest` version.
+   * You can fetch the currently active version using
+     ```sh
+     edgly service get --id <service-id> -V active
+     ```
+   * You can fetch a specific version number using
+     ```sh
+     edgly service get --id <service-id> -V 42
+     ```
 5. Review for any secrets detected
 6. Commit the newly added files
 
-7. It will store the `<service-id>` in a file named `edgly.yaml` and by default assume this to be the `production` environment.
+7. This will store the `<service-id>` in `edgly.yaml` and assume this to be the `production` environment.
 8. Further updates (pulls) from the service can be done using just
-```
-edgly service get
-```
+   ```sh
+   edgly service get
+   ```
 
 ### Create a stage environment
 

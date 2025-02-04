@@ -3,6 +3,7 @@
 *.tgz
 /.*
 test
+!src/test
 coverage
 junit
 logs

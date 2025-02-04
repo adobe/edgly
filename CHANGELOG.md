@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/adobe/edgly/compare/v1.1.6...v1.1.7) (2025-02-04)
+
+
+### Bug Fixes
+
+* **service import:** write edgly.yaml ([a48dbd6](https://github.com/adobe/edgly/commit/a48dbd60e014d544da2991bb10106de9e6c4a9db))
+
 ## [1.1.6](https://github.com/adobe/edgly/compare/v1.1.5...v1.1.6) (2025-02-04)
 
 

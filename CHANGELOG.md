@@ -1,3 +1,10 @@
+## [1.1.10](https://github.com/adobe/edgly/compare/v1.1.9...v1.1.10) (2025-02-06)
+
+
+### Bug Fixes
+
+* add guardrail to prevent fiddle create from overwriting an existing fiddle ([c237cb5](https://github.com/adobe/edgly/commit/c237cb5b68bfa1635cdde55c8c3efbce44e33ca0))
+
 ## [1.1.9](https://github.com/adobe/edgly/compare/v1.1.8...v1.1.9) (2025-02-04)
 
 

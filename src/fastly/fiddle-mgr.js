@@ -205,8 +205,6 @@ export class FastlyFiddleManager {
     };
 
     // map snippets
-    const { src } = fiddle;
-
     const subs = service.snippetsBySubroutine();
     for (const type in subs) {
       fiddle.src[type] = snippetsToFiddleSrc(subs[type]);
@@ -224,8 +222,8 @@ export class FastlyFiddleManager {
 
       // replace occurrences of F_backend with F_0, F_1, ...
       const reg = new RegExp(`\\bF_${backend.name}\\b`, 'g');
-      for (const type in src) {
-        src[type] = src[type].replaceAll(reg, `F_origin_${i}`);
+      for (const type in fiddle.src) {
+        fiddle.src[type] = fiddle.src[type].replaceAll(reg, `F_origin_${i}`);
       }
 
       backendMapping.push(`# F_origin_${i} => F_${backend.name}`);

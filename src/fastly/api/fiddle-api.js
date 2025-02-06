@@ -31,11 +31,14 @@ export class FastlyFiddleApi {
   }
 
   async create(fiddle) {
+    // ensure no id field is present to force creation of a new fiddle
+    const { id, ...fiddleBody } = fiddle;
+
     const resp = await this.fetch('POST /fiddle', {
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify(fiddle),
+      body: JSON.stringify(fiddleBody),
     });
     if (!resp.ok) {
       throw new Error(`Failed to create fiddle: ${resp.status} - ${await resp.text()}`);

@@ -19,6 +19,14 @@ import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
 import yargsAhoy from './yargs-ahoy.js';
 
+// colorize console output
+const wrapConsole =
+  (original, fn) =>
+  (...args) =>
+    original(fn(...args));
+console.warn = wrapConsole(console.warn, chalk.yellow);
+console.error = wrapConsole(console.error, chalk.red);
+
 const yargs = yargsAhoy();
 await yargs
   .command(service)

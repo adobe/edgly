@@ -1,3 +1,10 @@
+## [1.1.11](https://github.com/adobe/edgly/compare/v1.1.10...v1.1.11) (2025-03-06)
+
+
+### Bug Fixes
+
+* color warning and error messages [#26](https://github.com/adobe/edgly/issues/26) ([72eaa47](https://github.com/adobe/edgly/commit/72eaa47a93b4a2c5389b4e5769dc0405f41c78cc))
+
 ## [1.1.10](https://github.com/adobe/edgly/compare/v1.1.9...v1.1.10) (2025-02-06)
 
 

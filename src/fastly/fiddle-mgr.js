@@ -46,7 +46,6 @@ function fiddleSrcToSnippets(src, type) {
 
   function pushSnippet() {
     if (!snippet.name) {
-      console.warn(`Warning: Fiddle VCL without comment header(s): ${snippet.type}`);
       snippet.name = snippet.type;
       snippets.missingHeader = true;
     }
@@ -140,6 +139,9 @@ function tablesToDictionaries(init, service, opts) {
   }
 
   service.dictionaries = sortAlpha(dicts, (d) => d.name);
+
+  // remove all matched tables from init snippet
+  return init.replaceAll(tablesRegex, '');
 }
 
 function getHostname(backend) {
@@ -251,27 +253,26 @@ export class FastlyFiddleManager {
     service.snippets = [];
 
     // map tables to dictionaries
-    tablesToDictionaries(fiddle.src.init, service, opts);
+    fiddle.src.init = tablesToDictionaries(fiddle.src.init, service, opts);
 
     // map snippets
-    let missingHeader = false;
+    const missingHeaders = [];
     for (const type in fiddle.src) {
       const snippets = fiddleSrcToSnippets(fiddle.src[type], type);
       service.snippets.push(...snippets);
       if (snippets.missingHeader) {
-        missingHeader = true;
+        missingHeaders.push(type);
       }
     }
 
-    if (missingHeader) {
-      console.warn('\nYou can separate the VCL into multiple custom snippets using the following comment header:');
-      console.warn(DIVIDER);
-      console.warn('# name: <snippet-name>');
-      console.warn('# priority: 100');
-      console.warn(DIVIDER);
-      console.warn();
-      console.warn('If you now create a new fiddle it will have the example comment headers:');
-      console.warn('  edgly fiddle create');
+    if (missingHeaders.length > 0) {
+      console.warn(`Warning: Fiddle entries without known snippet headers: ${missingHeaders.join(', ')}`);
+      console.warn('  Tip: you can mark VCL snippets in Fiddles using this snippet header:');
+      console.warn('   ', DIVIDER);
+      console.warn('    # name: <snippet-name>');
+      console.warn('    # priority: 100');
+      console.warn('   ', DIVIDER);
+      console.warn('  Creating a new Fiddle will automatically add snippet headers: edgly fiddle create');
     }
 
     // map backends/origins

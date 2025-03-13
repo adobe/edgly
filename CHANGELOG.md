@@ -1,3 +1,10 @@
+## [1.1.13](https://github.com/adobe/edgly/compare/v1.1.12...v1.1.13) (2025-03-13)
+
+
+### Bug Fixes
+
+* fiddle get: do not loose snippets without comment header [#23](https://github.com/adobe/edgly/issues/23) ([#30](https://github.com/adobe/edgly/issues/30)) ([2dced8a](https://github.com/adobe/edgly/commit/2dced8a10414666089e5e8abbfb5ce08c6aa7fd4))
+
 ## [1.1.12](https://github.com/adobe/edgly/compare/v1.1.11...v1.1.12) (2025-03-09)
 
 

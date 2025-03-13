@@ -266,13 +266,19 @@ export class FastlyFiddleManager {
     }
 
     if (missingHeaders.length > 0) {
-      console.warn(`Warning: Fiddle entries without known snippet headers: ${missingHeaders.join(', ')}`);
-      console.warn('  Tip: you can mark VCL snippets in Fiddles using this snippet header:');
+      console.warn();
+      for (const type of missingHeaders) {
+        console.warn(`Warning: Fiddle code without snippet headers: ${type}`);
+      }
+      console.warn();
+      console.warn('Snippet tips:');
+      console.warn('  Snippet header comments let you define fine granular VCL snippets:');
       console.warn('   ', DIVIDER);
       console.warn('    # name: <snippet-name>');
       console.warn('    # priority: 100');
       console.warn('   ', DIVIDER);
-      console.warn('  Creating a new Fiddle will automatically add snippet headers: edgly fiddle create');
+      console.warn('  Without headers, each lifecycle got exactly one snippet. See "snippets/" folder.');
+      console.warn('  You can also see the header format if you create a new Fiddle: edgly fiddle create');
     }
 
     // map backends/origins

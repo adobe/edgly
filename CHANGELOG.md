@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/adobe/edgly/compare/v1.1.13...v1.2.0) (2025-03-13)
+
+
+### Features
+
+* better secret detection ([6a283f0](https://github.com/adobe/edgly/commit/6a283f08af963de5c2c91344b2803828aacd2cbc))
+* detect AWS secret keys ([c7d050f](https://github.com/adobe/edgly/commit/c7d050f4764470ba2c31255e4edcd839a24602c4))
+
 ## [1.1.13](https://github.com/adobe/edgly/compare/v1.1.12...v1.1.13) (2025-03-13)
 
 

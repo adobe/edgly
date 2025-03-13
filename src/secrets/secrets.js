@@ -92,17 +92,14 @@ function getPatterns() {
   if (!patterns) {
     patterns = yaml.parse(fs.readFileSync(PATTERNS_YAML_URL, 'utf8'));
   }
-  return patterns.patterns;
+  // we only use high confidence patterns (for now)
+  return patterns.patterns.filter((p) => p.pattern.confidence === 'high');
 }
 
 function findKnownSecretPatterns(input) {
   const hits = [];
-  for (const pattern of getPatterns()) {
-    const { name, regex, confidence } = pattern.pattern;
-
-    if (confidence !== 'high') {
-      continue;
-    }
+  for (const p of getPatterns()) {
+    const { name, regex } = p.pattern;
 
     const re = new RegExp(regex, 'g');
     for (const match of input.matchAll(re)) {
@@ -121,22 +118,23 @@ function findSecretsInString(input) {
   }
 
   const cfg = global.config.secrets;
-
   const matches = [];
-  for (const word of input.split(/[\s:\/\.,&#'"=;]+/)) {
-    if (cfg?.ignore_values?.includes(word)) {
-      continue;
-    }
-    matches.push(...findKnownSecretPatterns(word));
 
-    if (matches.length === 0) {
-      const match = findHighEntropy(word, cfg?.entropy_threshold);
-      if (match) {
-        matches.push(match);
-      }
+  // 1. find known secret patterns
+  matches.push(...findKnownSecretPatterns(input));
+
+  // 2. find high entropy strings. need to split into "words" first
+  for (const word of input.split(/[\s:\/\.,&#'"=;]+/)) {
+    // if (matches.length === 0) {
+    const match = findHighEntropy(word, cfg?.entropy_threshold);
+    if (match) {
+      matches.push(match);
     }
+    // }
   }
-  return matches;
+
+  // remove all configured ignoreValues
+  return matches.filter((m) => !cfg?.ignore_values?.includes(m.secret));
 }
 
 function replaceSecrets(input, secret, variable) {
@@ -296,7 +294,7 @@ export function detectSecrets(service, mode) {
       }
     }
     console.warn();
-    console.warn('Options:');
+    console.warn('Secret options:');
     if (mode === 'replace') {
       console.warn(`  1. Secrets have been replaced with \${{VAR}} variables, stored in ${SECRETS_FILE}.`);
       console.warn('     DO NOT commit this file to version control, but use CI secret store instead.');
@@ -305,6 +303,6 @@ export function detectSecrets(service, mode) {
       console.warn('     Run with --secrets-mode=replace to replace automatically.');
     }
     console.warn('  2. Consider using a Fastly write-only dictionary, and dict lookup where possible.');
-    console.warn('  3. False positives: Ignore via secrets_detector.ignore_keys or ignore_values config.');
+    console.warn('  3. False positives: Ignore via secrets.ignore_keys or ignore_values config.');
   }
 }

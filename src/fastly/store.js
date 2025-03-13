@@ -309,9 +309,9 @@ function writeDictionaries(dictionaries) {
       file.writeLn("# next deployment using e.g. 'fastly service update'.");
 
       if (isNew) {
-        console.warn(`\n Private dictionary '${dict.name}' has ${dict.info?.item_count} unknown entries.`);
-        console.warn('         Private entries cannot be read from Fastly. Please manually identify and add');
-        console.warn('         the entries in the file using environment variable replacement: KEY="${{VAR}}"');
+        console.warn(`\nWarning: Private dictionary '${dict.name}' has ${dict.info?.item_count} unknown entries.`);
+        console.warn('  Private entries cannot be read from Fastly. Please manually identify and add');
+        console.warn('  the entries in the file using environment variable replacement: KEY="${{VAR}}"');
       }
     }
 

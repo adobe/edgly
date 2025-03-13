@@ -39,31 +39,41 @@ function fiddleSrcToSnippets(src, type) {
   const lines = src.split('\n');
 
   let snippet = {
+    type,
+    priority: '100',
     content: '',
   };
+
+  function pushSnippet() {
+    if (!snippet.name) {
+      snippet.name = snippet.type;
+      snippets.missingHeader = true;
+    }
+    snippets.push(snippet);
+  }
 
   for (const line of lines) {
     if (line.startsWith('# name: ')) {
       if (snippet.content.trim()) {
-        snippets.push(snippet);
+        pushSnippet();
       }
       snippet = {
         type,
         name: line.substr('# name: '.length),
-        priority: 100,
+        priority: '100',
         content: '',
       };
     } else if (line.startsWith('# prio: ')) {
       snippet.priority = line.substr('# prio: '.length);
     } else if (line === DIVIDER) {
       // skip
-    } else if (snippet.name) {
+    } else {
       snippet.content += `${line}\n`;
     }
   }
 
   if (snippet.content.trim()) {
-    snippets.push(snippet);
+    pushSnippet();
   }
 
   return snippets;
@@ -129,6 +139,9 @@ function tablesToDictionaries(init, service, opts) {
   }
 
   service.dictionaries = sortAlpha(dicts, (d) => d.name);
+
+  // remove all matched tables from init snippet
+  return init.replaceAll(tablesRegex, '');
 }
 
 function getHostname(backend) {
@@ -240,11 +253,32 @@ export class FastlyFiddleManager {
     service.snippets = [];
 
     // map tables to dictionaries
-    tablesToDictionaries(fiddle.src.init, service, opts);
+    fiddle.src.init = tablesToDictionaries(fiddle.src.init, service, opts);
 
     // map snippets
+    const missingHeaders = [];
     for (const type in fiddle.src) {
-      service.snippets.push(...fiddleSrcToSnippets(fiddle.src[type], type));
+      const snippets = fiddleSrcToSnippets(fiddle.src[type], type);
+      service.snippets.push(...snippets);
+      if (snippets.missingHeader) {
+        missingHeaders.push(type);
+      }
+    }
+
+    if (missingHeaders.length > 0) {
+      console.warn();
+      for (const type of missingHeaders) {
+        console.warn(`Warning: Fiddle code without snippet headers: ${type}`);
+      }
+      console.warn();
+      console.warn('Snippet tips:');
+      console.warn('  Snippet header comments let you define fine granular VCL snippets:');
+      console.warn('   ', DIVIDER);
+      console.warn('    # name: <snippet-name>');
+      console.warn('    # priority: 100');
+      console.warn('   ', DIVIDER);
+      console.warn('  Without headers, each lifecycle got exactly one snippet. See "snippets/" folder.');
+      console.warn('  You can also see the header format if you create a new Fiddle: edgly fiddle create');
     }
 
     // map backends/origins

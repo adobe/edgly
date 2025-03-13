@@ -128,6 +128,19 @@ Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it all
    ```
 6. Review the changes and commit
 
+#### Snippet headers in Fiddles
+
+Use the following comment header in your Fiddle code, one for each separate
+snippet, to mark separate VCL snippets in a single lifecycle (such as `recv`).
+These will be also be visible in the `snippets/*.vcl` files.
+
+```vcl
+# ===================================================================
+# name: <snippet-name>
+# priority: 100
+# ===================================================================
+```
+
 ### Test changes in stage then deploy to production
 
 1. Deploy to stage:

@@ -1,6 +1,6 @@
 {
   "name": "@adobe/edgly",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Command line tool to boost Fastly VCL service development",
   "main": "src/index.js",
   "type": "module",

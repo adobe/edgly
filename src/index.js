@@ -19,6 +19,7 @@ import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
 import { updateCheck } from './util.js';
 import yargsAhoy from './yargs-ahoy.js';
+
 // colorize console output
 const wrapConsole =
   (original, fn) =>

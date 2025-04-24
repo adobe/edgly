@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/adobe/edgly/compare/v1.2.1...v1.2.2) (2025-04-24)
+
+
+### Bug Fixes
+
+* add update notification (runs daily) ([#39](https://github.com/adobe/edgly/issues/39)) ([7218258](https://github.com/adobe/edgly/commit/72182585cde19005d0b1a2f3d4cd4793351a7086))
+
 ## [1.2.1](https://github.com/adobe/edgly/compare/v1.2.0...v1.2.1) (2025-03-30)
 
 

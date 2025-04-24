@@ -22,6 +22,7 @@
     "chalk": "5.4.1",
     "formdata-node": "6.0.3",
     "glob": "11.0.1",
+    "tiny-update-notifier": "^2.0.0",
     "yaml": "2.7.1",
     "yargs": "17.7.2"
   },

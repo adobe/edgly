@@ -17,6 +17,7 @@ import service from './commands/service/service.js';
 import test from './commands/test.js';
 import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
+import { updateCheck } from './util.js';
 import yargsAhoy from './yargs-ahoy.js';
 
 // colorize console output
@@ -26,6 +27,8 @@ const wrapConsole =
     original(fn(...args));
 console.warn = wrapConsole(console.warn, chalk.yellow);
 console.error = wrapConsole(console.error, chalk.red);
+
+await updateCheck();
 
 const yargs = yargsAhoy();
 await yargs

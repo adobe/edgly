@@ -11,6 +11,9 @@
  */
 
 import fs from 'node:fs';
+import chalk from 'chalk';
+import updateNotifier from 'tiny-update-notifier';
+import packageJson from '../package.json' with { type: 'json' };
 
 /**
  * JSON.stringify() but with alphabetically sorted keys.
@@ -157,4 +160,27 @@ export function asMap(array, keyValueFn = (item) => [item, item]) {
     obj[key] = value;
     return obj;
   }, {});
+}
+
+export async function updateCheck() {
+  try {
+    const update = await updateNotifier({ pkg: packageJson });
+    if (update) {
+      process.on('exit', () => {
+        console.log();
+        console.log(chalk.yellow('┌──────────────────────────────────────────────┐'));
+        console.log(chalk.yellow(`│ New version available: ${update.latest}                 │`));
+        console.log(chalk.yellow('│                                              │'));
+        console.log(
+          chalk.yellow('│ To update run:'),
+          chalk.blue(`npm install -g ${packageJson.name}`),
+          chalk.yellow('  │'),
+        );
+        console.log(chalk.yellow('└──────────────────────────────────────────────┘'));
+        console.log();
+      });
+    }
+  } catch (e) {
+    console.debug('Failed to check for updates:', e);
+  }
 }

@@ -12,15 +12,13 @@
  */
 
 import chalk from 'chalk';
-import updateNotifier from 'tiny-update-notifier';
-import packageJson from '../package.json' with { type: 'json' };
 import fiddle from './commands/fiddle/fiddle.js';
 import service from './commands/service/service.js';
 import test from './commands/test.js';
 import version from './commands/version.js';
 import { GLOBAL_OPTS } from './opts.js';
+import { updateCheck } from './util.js';
 import yargsAhoy from './yargs-ahoy.js';
-
 // colorize console output
 const wrapConsole =
   (original, fn) =>
@@ -29,20 +27,7 @@ const wrapConsole =
 console.warn = wrapConsole(console.warn, chalk.yellow);
 console.error = wrapConsole(console.error, chalk.red);
 
-let updateMsg;
-try {
-  const update = await updateNotifier({ pkg: packageJson });
-  if (update) {
-    updateMsg = '\n';
-    updateMsg += '┌───────────────────────────────────────────────┐\n';
-    updateMsg += ` New version available: ${update.latest}\n`;
-    updateMsg += '\n';
-    updateMsg += ` To update run: npm install -g ${packageJson.name}\n`;
-    updateMsg += '└───────────────────────────────────────────────┘\n';
-  }
-} catch (e) {
-  console.debug('Failed to check for updates:', e);
-}
+await updateCheck();
 
 const yargs = yargsAhoy();
 await yargs
@@ -74,7 +59,6 @@ await yargs
   .epilogue('  Example: --api-token becomes EDGLY_API_TOKEN.')
   .epilogue('')
   .epilogue(`Version: ${version.getVersion()}`)
-  .epilogue(updateMsg ? chalk.yellow(updateMsg) : '')
   .run();
 
 // yargs and/or @adobe/fetch somehow hangs at the end, so we force quit as workaround

@@ -40,7 +40,7 @@ export default {
       .options(SHARED_OPTS.testFile);
   },
   handler: async (argv) => {
-    const service = readService('production');
+    const service = readService();
 
     const fiddleMgr = new FastlyFiddleManager();
     const fiddle = fiddleMgr.serviceToFiddle(service, { includeSecrets: argv.includeSecrets });

@@ -13,11 +13,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { globSync } from 'glob';
+import yaml from 'yaml';
 import { asMap, openFile, removeLinePrefix, sortAlpha, toSortedJson, trimEmptyLines } from '../util.js';
 import { FastlyService } from './service.js';
 
 const FILE_SERVICE = 'service.json';
 const FILE_ACL = 'acl.json';
+const FILE_DOMAINS = 'domains.yaml';
 const DIR_VCLS = 'vcl';
 const DIR_SNIPPETS = 'snippets';
 const DIR_DICTIONARIES = 'dictionaries';
@@ -378,12 +380,133 @@ function readDictionaries(service) {
   }
 }
 
+// legacy case: previously non-production domains were stored in edgly.yaml
+// this migrates them to domains.yaml
+function migrateDomainsFromEdglyYaml(envToIgnore, domainsYaml) {
+  const envs = global.config.env;
+  const domains = {};
+  for (const env in envs) {
+    if (env === envToIgnore) {
+      continue;
+    }
+    if (envs[env].domains) {
+      // get values of domains object
+      domains[env] = Object.values(envs[env].domains);
+    }
+  }
+  if (Object.keys(domains).length > 0) {
+    console.warn(`\nFound domain mappings in edgly.yaml. Migrating to ${FILE_DOMAINS}.`);
+
+    // put domains in domains.yaml
+    for (const env in domains) {
+      domainsYaml.setIn([env], domains[env]);
+    }
+
+    // remove domains from edgly.yaml
+    for (const env in domains) {
+      global.config.delete(`env.${env}.domains`);
+    }
+    global.config.write();
+  }
+}
+
+// legacy case: previously non-production domains were stored in edgly.yaml
+function readDomainsFromEdglyYaml(service, env) {
+  if (env !== 'production') {
+    console.warn(`\nFound domains in edgly.yaml. Next 'edgly service get' run will migrate them to ${FILE_DOMAINS}.`);
+
+    const domainMap = global.config.env?.[env]?.domains;
+
+    const unmappedDomains = [];
+
+    for (const domain of service.domains) {
+      const newDomain = domainMap?.[domain.name];
+      if (newDomain && newDomain !== domain.name) {
+        console.debug(`- ${domain.name} -> ${newDomain}`);
+        domain.name = newDomain;
+      } else {
+        unmappedDomains.push(domain.name);
+      }
+    }
+
+    if (unmappedDomains.length > 0) {
+      console.error(`\nError: The following domains are not mapped in env.${env}.domains in configuration:\n`);
+      for (const domain of unmappedDomains) {
+        console.error(`       ${domain}`);
+      }
+      process.exit(1);
+    }
+  }
+}
+
+function writeDomains(domains, env) {
+  const doc = fs.existsSync(FILE_DOMAINS)
+    ? yaml.parseDocument(fs.readFileSync(FILE_DOMAINS, 'utf8'))
+    : new yaml.Document({});
+
+  const domainList = [];
+  for (const domain of domains) {
+    if (domain.comment && domain.comment.length > 0) {
+      // child object if comment is present
+      domainList.push({
+        name: domain.name,
+        comment: domain.comment,
+      });
+    } else {
+      // shorter string only if no comment
+      domainList.push(domain.name);
+    }
+  }
+  doc.setIn([env], domainList);
+
+  migrateDomainsFromEdglyYaml(env, doc);
+
+  fs.writeFileSync(FILE_DOMAINS, doc.toString());
+  console.debug(`- Domains ${FILE_DOMAINS}`);
+}
+
+function readDomains(service, env) {
+  if (fs.existsSync(FILE_DOMAINS)) {
+    const content = fs.readFileSync(FILE_DOMAINS, 'utf8');
+    const doc = yaml.parse(content);
+
+    const domains = doc[env];
+    if (Array.isArray(domains)) {
+      service.domains = [];
+      for (let i = 0; i < domains.length; i++) {
+        const domain = domains[i];
+        if (typeof domain === 'string') {
+          service.domains.push({
+            name: domain,
+            comment: '',
+          });
+        } else if (typeof domain === 'object') {
+          service.domains.push({
+            name: domain.name,
+            comment: domain.comment,
+          });
+        } else {
+          console.error(`Error: '${env}[${i}]' in ${FILE_DOMAINS} is not a string or object:`, domain);
+          process.exit(1);
+        }
+      }
+      console.debug(`- Domains ${FILE_DOMAINS} (${env})`);
+    } else {
+      console.error(`Error: '${env}' in ${FILE_DOMAINS} is not a list`);
+      process.exit(1);
+    }
+  } else if (env !== 'production') {
+    readDomainsFromEdglyYaml(service, env);
+  }
+}
+
 /**
  * Write service configuration to current working directory
  *
  * @param {FastlyService} service Fastly service configuration
+ * @param {String} env environment such as 'stage'. default is 'production'
  */
-export function writeService(service) {
+export function writeService(service, env = 'production') {
   console.debug();
   console.debug('Writing configuration to local folder:');
 
@@ -391,20 +514,21 @@ export function writeService(service) {
   writeSnippets(service);
   writeVcls(service.vcls);
   writeDictionaries(service.dictionaries);
+  writeDomains(service.domains, env);
 
   // main service config
-  const slim = service.removeKeys(['acls', 'snippets', 'vcls', 'dictionaries']);
+  const slim = service.removeKeys(['acls', 'snippets', 'vcls', 'dictionaries', 'domains']);
   fs.writeFileSync(FILE_SERVICE, slim.toSortedJson());
-  console.debug(`- Config ${FILE_SERVICE}`);
+  console.debug(`- Service config ${FILE_SERVICE}`);
 }
 
 /**
  * Read service configuration from current working directory
  *
- * @param {String} env environment such as 'production'
+ * @param {String} env environment such as 'stage'. default is 'production'
  * @returns {FastlyService} Fastly service read from disk
  */
-export function readService(env) {
+export function readService(env = 'production') {
   if (!fs.existsSync(FILE_SERVICE)) {
     console.error('Error: No service configuration (service.json) found in local folder.');
     process.exit(1);
@@ -416,23 +540,9 @@ export function readService(env) {
   readSnippets(service);
   readVcls(service);
   readDictionaries(service);
+  readDomains(service, env);
 
   service = service.replaceVariables();
-
-  if (env !== 'production') {
-    console.debug(`\nAdjusting domains for environment '${env}'...`);
-
-    const domainMap = global.config.env?.[env]?.domains;
-
-    const unmappedDomains = service.changeDomains(domainMap);
-    if (unmappedDomains.length > 0) {
-      console.error(`\nError: The following domains are not mapped in env.${env}.domains in configuration:\n`);
-      for (const domain of unmappedDomains) {
-        console.error(`       ${domain}`);
-      }
-      process.exit(1);
-    }
-  }
 
   return service;
 }

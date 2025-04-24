@@ -52,4 +52,9 @@ export class Config {
     this.#doc.setIn(keyPath.split('.'), value);
     return this;
   }
+
+  delete(keyPath) {
+    this.#doc.deleteIn(keyPath.split('.'));
+    return this;
+  }
 }

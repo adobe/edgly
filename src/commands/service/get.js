@@ -43,11 +43,13 @@ export default {
   },
   handler: async (argv) => {
     let id;
+    let env;
 
     if (argv.id) {
+      env = 'production';
       // explicitly provided service id takes precedence
       if (argv.env) {
-        console.warn('Warning: Ignoring --env when service ID is provided.');
+        console.warn('Warning: Ignoring --env when service ID is provided. Using production.');
       } else {
         const prodId = global.config.env?.production?.id;
         if (prodId && id !== prodId) {
@@ -57,7 +59,7 @@ export default {
       }
       id = argv.id;
     } else {
-      const env = argv.env || 'production';
+      env = argv.env || 'production';
 
       // lookup service id from environment in configuration file
       id = global.config.env?.[env]?.id;
@@ -78,13 +80,13 @@ export default {
       return;
     }
 
-    writeService(service);
+    writeService(service, env);
 
     // write service id to config file if it was set by user and isn't in the file yet
     if (argv.id && !global.config.env?.production?.id) {
       global.config.set('env.production.id', argv.id).write();
     }
 
-    console.debug(`\nSuccessfully written ${service.service_id} v${service.version}.`);
+    console.debug(`\nSuccessfully written ${service.service_id} v${service.version} (${env}).`);
   },
 };

@@ -16,6 +16,7 @@ Enables version control for [Fastly™ VCL services](https://www.fastly.com/docu
 while still being a connected to version controlled configuration
 * File mapping:
   * Service configuration: `service.json`
+  * Domain names: `domains.yaml`
   * VCL snippets: `snippets/*.vcl`
   * VCL files: `vcl/*.vcl`
     * Note: files are not be supported in Fiddles
@@ -98,18 +99,24 @@ GLOBAL OPTIONS
 
 A stage environment allows to safely test changes in Fastly before deploying to the production service.
 
-1. Add stage environment to `edgly.yaml` and map the domain names to the ones to be used for stage:
+_Note that this simply creates another VCL service in Fastly with separate domain names (that you have to define) to represent a stage environment. It does NOT currently use or support the [Fastly staging feature](https://docs.fastly.com/en/guides/working-with-staging introduced in Spring 2025._
+
+1. Add your choice of stage domains to `domains.yaml`:
    ```yaml
-   env:
-     stage:
-      domains:
-        example.com: "stage.example.com"
+   ...
+   # environment 'stage'
+   stage:
+     - stage.example.com
+     - stage2.example.com
+     # to set domain comment in Fastly use an object with these keys instead of a string
+     - name: stage3.example.com
+       comment: "My stage domain no. 3"
    ```
 2. Create stage service:
    ```sh
    edgly service create --env stage
    ```
-3. This will store the new service id in `edgly.yaml`. Commit this file.
+3. This will store the new service id in `edgly.yaml`. Commit this file and the updated `domains.yaml`.
 
 ### Develop changes using Fiddles
 
@@ -299,17 +306,9 @@ env:
     # fastly service id
     id: abcd1234
   stage:
-    # stage service id
     id: efgh5678
-    # different domain names for stage env
-    # map from the production domain name (in service.json)
-    domains:
-      example.com: "stage.example.com"
   dev:
-    service_id: ijkl9012
-    # different domain names for dev env
-    domains:
-      example.com: "dev.example.com"
+    id: ijkl9012
 
 # settings for fiddle sub commands
 fiddle:
@@ -320,7 +319,7 @@ fiddle:
 # settings for secret detection
 secrets:
   # custom threshold for entropy to consider something a secret
-  # default is 4.5 and should normally be not changed 
+  # default is 4.5 and should normally be not changed
   entropy_threshold: 3.8
 ```
 

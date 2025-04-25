@@ -14,7 +14,7 @@
 * Syncing between a local version controlled folder and a [Fastly VCL service](https://www.fastly.com/documentation/guides/vcl/)
 * Staging environments for validating changes on real Fastly infrastructure before deploying to production
 * Syncing with [Fiddles](https://fiddle.fastly.dev) to develop and test VCL snippets connected to version control
-* Source [file structure](#files) for convenient editing, reading and reviewing of VCL code and configuration
+* Source [file structure](#files) for convenient editing, reading, diffing and reviewing of VCL code and service config
 * Secret detection to prevent accidentally commiting credentials to version control
 * Variable replacement for secrets and other dynamic configuration using `${{VAR}}`
 * Automatic testing of services using HTTP test framework leveraging `*.http` files
@@ -413,7 +413,7 @@ The production domains were stored in the `service.json` file, which was confusi
 
 ### snippets/*.vcl
 
-This contains the code for any [VCL snippets](https://docs.fastly.com/en/guides/using-regular-vcl-snippets). There will be one file for each VLC phase, containing all the snippets for that phase. Snippets are generally recommended since they work with Fiddles with `edgly`, unlike VCL files.
+This contains the code for any [VCL snippets](https://docs.fastly.com/en/guides/using-regular-vcl-snippets). There will be one file for each VCL phase, containing all the snippets for that phase. Snippets are generally recommended since they work with Fiddles with `edgly`, unlike VCL files.
 
 Folder structure example:
 ```
@@ -465,13 +465,11 @@ The actual snippets are defined using **structured comment headers**. These set 
   # ===================================================================
 ```
 
-When creating new snippets this format has to be strictly followed. You will also see this format in the Fiddles created by `edgly fiddle get` when [developing changes using Fiddles](#develop-changes-using-fiddles). When creating new snippets (the granularity of snippets is the choice of the developer) via Fiddles, this exact format has to be followed:
+When creating new snippets this format has to be strictly followed. You will also see this format in the Fiddles created by `edgly fiddle create` when [developing changes using Fiddles](#develop-changes-using-fiddles). To "create" new snippets while coding in Fiddles, the above format has to be followed exactly. The granularity of snippets is the choice of the developer.
 
 ### vcl/*.vcl
 
 This stores any [VCL files](https://docs.fastly.com/en/guides/uploading-custom-vcl) of the service.
-
-Generally one should avoid mixing VCL snippets and VCL files in one project. Note that files are not supported in Fiddles with `edgly fiddle *`.
 
 Each custom VCL file will be stored by it's name in the `vcl` folder:
 ```
@@ -479,6 +477,8 @@ vcl/
   custom.vcl
   another.vcl
 ```
+
+Generally one should avoid mixing VCL snippets and VCL files in the same service/project. VCL files are not supported in Fiddles with `edgly fiddle *`.
 
 ### dictionaries/*.ini
 
@@ -497,7 +497,7 @@ Each key-value pair corresponds to a dictionary item.
 
 Note that double-quoting values is highly recommended (and `edgly service get` will automatically quote values when writing to disk).
 
-This does not support or use INI sections. Comments will be lost on round-tripping through `edgly service update` and `edgly service get`.
+This does not support or use INI sections. Comments can be lost on round-tripping through `edgly service update` and `edgly service get`.
 
 ### dictionaries/private.*.ini
 

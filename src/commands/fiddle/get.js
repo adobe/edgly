@@ -50,7 +50,7 @@ export default {
     }
 
     const fiddleMgr = new FastlyFiddleManager();
-    const service = readService('production');
+    const service = readService();
 
     fiddleMgr.fiddleToService(fiddle.fiddle, service, { includeSecrets: argv.includeSecrets });
 

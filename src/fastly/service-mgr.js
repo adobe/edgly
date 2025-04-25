@@ -100,14 +100,14 @@ export class FastlyServiceManager {
     console.log(`Version: ${service.version} (active ${activeVersion}, latest ${latestVersion})`);
 
     // load acl entries
-    console.debug('- Loading ACLs...');
+    console.debug('- Fetching ACLs...');
     for (const acl of service.acls) {
       const { id: aclId } = acl;
       acl.entries = await fastly.aclEntries(id, aclId);
     }
 
     // load dictionary items
-    console.debug('- Loading dictionaries...');
+    console.debug('- Fetching dictionaries...');
     for (const dict of service.dictionaries) {
       const { id: dictId, write_only } = dict;
       dict.info = await fastly.dictionaryInfo(id, service.version, dictId);

@@ -102,28 +102,6 @@ export class FastlyService {
   }
 
   /**
-   * Replaces the service domains
-   *
-   * @param {Object} domainMap object map containing domain changes
-   * @returns {Array} list of unmapped domains (for reporting)
-   */
-  changeDomains(domainMap) {
-    const unmappedDomains = [];
-
-    for (const domain of this.domains) {
-      const newDomain = domainMap?.[domain.name];
-      if (newDomain && newDomain !== domain.name) {
-        console.debug(`- ${domain.name} -> ${newDomain}`);
-        domain.name = newDomain;
-      } else {
-        unmappedDomains.push(domain.name);
-      }
-    }
-
-    return unmappedDomains;
-  }
-
-  /**
    * Replace variables of the form `${{NAME}}` with values from
    * corresponding environment variables and return a new FastlyService object.
    *

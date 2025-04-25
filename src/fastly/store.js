@@ -381,12 +381,12 @@ function readDictionaries(service) {
 }
 
 // legacy case: previously non-production domains were stored in edgly.yaml
-// this migrates them to domains.yaml
-function migrateDomainsFromEdglyYaml(envToIgnore, domainsYaml) {
+// this migrates them to domains.yaml. only called if service env is 'production'
+function migrateDomainsFromEdglyYaml(domainsYaml) {
   const envs = global.config.env;
   const domains = {};
   for (const env in envs) {
-    if (env === envToIgnore) {
+    if (env === 'production') {
       continue;
     }
     if (envs[env].domains) {
@@ -395,7 +395,7 @@ function migrateDomainsFromEdglyYaml(envToIgnore, domainsYaml) {
     }
   }
   if (Object.keys(domains).length > 0) {
-    console.warn(`\nFound domain mappings in edgly.yaml. Migrating to ${FILE_DOMAINS}.`);
+    console.warn(`\nFound domains in edgly.yaml. Automatically migrating them to ${FILE_DOMAINS}.`);
 
     // put domains in domains.yaml
     for (const env in domains) {
@@ -413,7 +413,7 @@ function migrateDomainsFromEdglyYaml(envToIgnore, domainsYaml) {
 // legacy case: previously non-production domains were stored in edgly.yaml
 function readDomainsFromEdglyYaml(service, env) {
   if (env !== 'production') {
-    console.warn(`\nFound domains in edgly.yaml. Next 'edgly service get' run will migrate them to ${FILE_DOMAINS}.`);
+    console.warn(`Found domains in edgly.yaml. 'edgly service get' (production) will migrate them to ${FILE_DOMAINS}.`);
 
     const domainMap = global.config.env?.[env]?.domains;
 
@@ -459,7 +459,9 @@ function writeDomains(domains, env) {
   }
   doc.setIn([env], domainList);
 
-  migrateDomainsFromEdglyYaml(env, doc);
+  if (env === 'production') {
+    migrateDomainsFromEdglyYaml(doc);
+  }
 
   fs.writeFileSync(FILE_DOMAINS, doc.toString());
   console.debug(`- Domains ${FILE_DOMAINS}`);

@@ -10,7 +10,8 @@
     ".github/",
     "*.md",
     "*.yml",
-    "src/secrets/patterns.yaml"
+    "src/secrets/patterns.yaml",
+    "*.svg"
   ],
   "licenseFormats": {
     "js": { "prepend": "/*", "append": " */", "eachLine": { "prepend": " * " } }

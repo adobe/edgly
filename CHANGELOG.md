@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/adobe/edgly/compare/v1.2.2...v1.3.0) (2025-04-25)
+
+
+### Features
+
+* store domains for all environments in domains.yaml ([#40](https://github.com/adobe/edgly/issues/40)) ([5903968](https://github.com/adobe/edgly/commit/59039685a7a4920ca4ae05ffdc2b9269b2c8074e))
+
 ## [1.2.2](https://github.com/adobe/edgly/compare/v1.2.1...v1.2.2) (2025-04-24)
 
 

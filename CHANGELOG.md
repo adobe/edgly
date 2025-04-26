@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/adobe/edgly/compare/v1.3.0...v1.3.1) (2025-04-26)
+
+
+### Bug Fixes
+
+* clarify current test capaibilities ([2070119](https://github.com/adobe/edgly/commit/2070119e4d75c99679fde9e2af8736be04b5a4e2))
+
 # [1.3.0](https://github.com/adobe/edgly/compare/v1.2.2...v1.3.0) (2025-04-25)
 
 

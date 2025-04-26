@@ -84,10 +84,34 @@ function rewriteTest(match, file, line) {
     return `HTTP/1.1 ${value}`;
   }
 
+  /*
+  // can be enabled once https://github.com/jupegarnica/tepi/issues/2 is fixed
+
   // clientFetch.status oneOf [200, 206]
   if (target === 'clientFetch.status' && comparison === 'oneOf') {
     return `<% assertArrayIncludes(${value}, [response.status], '${label || 'Unexpected response status'}') %>`;
   }
+
+  // clientFetch.status isAbove 100
+  if (target === 'clientFetch.status' && comparison === 'isAbove') {
+    return `<% assert(response.status > ${value}, '${label || 'Unexpected response status'}') %>`;
+  }
+
+  // clientFetch.status isAtLeast 100
+  if (target === 'clientFetch.status' && comparison === 'isAtLeast') {
+    return `<% assert(response.status >= ${value}, '${label || 'Unexpected response status'}') %>`;
+  }
+
+  // clientFetch.status isBelow 100
+  if (target === 'clientFetch.status' && comparison === 'isBelow') {
+    return `<% assert(response.status < ${value}, '${label || 'Unexpected response status'}') %>`;
+  }
+
+  // clientFetch.status isAtMost 100
+  if (target === 'clientFetch.status' && comparison === 'isAtMost') {
+    return `<% assert(response.status <= ${value}, '${label || 'Unexpected response status'}') %>`;
+  }
+  */
 
   // clientFetch.resp includes "Content-Type: image/webp"
   if (target === 'clientFetch.resp' && comparison === 'includes') {
@@ -173,21 +197,25 @@ async function rewriteTestsInFile(baseDir, filePath) {
       if (!fiddleTestFound) {
         if (match.groups.target !== 'clientFetch.status' || match.groups.comparison !== 'is') {
           throw new SourceFileError(
-            "First test must assert response status: 'clientFetch.status is XXX'",
+            "First test MUST assert a specific response status: 'clientFetch.status is XXX'",
             filePath,
             i + 1,
           );
         }
+
+        // // above error can be replaced with this below once https://github.com/jupegarnica/tepi/issues/2 is fixed
+        // const statusLine = 'HTTP/1.1';
+        // newLines.push(statusLine);
+        // console.debug('✅', statusLine);
       }
       fiddleTestFound = true;
 
       const newLine = rewriteTest(match, filePath, i + 1);
-      console.debug();
-      console.debug('✅ ', line);
-      console.debug('   ', newLine);
+      console.debug('❌', line);
+      console.debug('✅', newLine);
       newLines.push(newLine);
     } else {
-      console.debug('❌ ', line);
+      console.debug('  ', line);
       newLines.push(line);
     }
   }

@@ -15,7 +15,8 @@ Prefix any assertion line with `[msg] ` to use a custom assertion message shown 
 ### Status
 
 * `clientFetch.status is 200`
-* `clientFetch.status oneOf [200, 206]`
+
+The [tepi](https://github.com/jupegarnica/tepi) framework used under the hood currently only supports [checking for an exact status code](https://github.com/jupegarnica/tepi/issues/2). Hence Fiddle status expressions with `oneOf`, `isAbove` or `isBelow` are not supported.
 
 ### Headers
 

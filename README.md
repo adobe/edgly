@@ -305,6 +305,7 @@ Inside VS Code you can now run tests individually:
 | [dictionaries/private.*.ini](#dictionariesprivateini) | [Private dictionaries](https://docs.fastly.com/en/guides/working-with-dictionaries#private-dictionaries) for secrets |
 | [acl.json](#acljson) | [IP access control lists](https://docs.fastly.com/en/guides/about-acls) |
 | [tests/*.http](#test-framework) | Test files for the [HTTP Test framework](#test-framework) |
+| `tests/fiddle.http` | Test file that will be synced to Fiddle test requests in `edgly fiddle create` and `edgly fiddle get`. To use a different file, set `--test-file <file>`. |
 
 ### Environment variable replacement
 

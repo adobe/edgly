@@ -364,6 +364,16 @@ secrets:
   # custom threshold for entropy to consider something a secret
   # default is 4.5 and should normally be not changed
   entropy_threshold: 3.8
+  # list of dictionary keys to skip when detecting secrets
+  # good to ignore false positives
+  ignore_keys:
+    - MY_KEY
+    - S3_BUCKET
+  # list of values to ignore when detecting secrets
+  # good to ignore false positives
+  ignore_values:
+    - some-value-that-looks-like-a-secret
+    - another-false-positive
 ```
 
 ### service.json

@@ -178,6 +178,33 @@ Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it all
    ```
 6. If something goes wrong, revert to old version using the Fastly UI
 
+### Safely try out any changes in stage
+
+Sometimes you might want to safely try out changes via the Fastly service UI without impacting production. This can be done on the stage service:
+
+1. (Optional) Ensure stage is up to date with latest changes from version control:
+   ```sh
+   edgly service update -e stage
+   ```
+3. In the Fastly UI, make changes to your stage service (and activate)
+4. Test changes
+   1. manually test if that change works as expected
+   2. run tests against stage
+      ```sh
+      HOST=<stage-host> edgly test
+      ```
+   3. ideally add new test case to `*.http` files
+6. Iterate 2 and 3 until change is complete
+7. Fetch changes from stage into version control:
+   ```sh
+   edgly service get -e stage
+   ```
+8. Commit
+9. Deploy to production:
+   ```sh
+   edgly service update --activate
+   ```
+
 ## Test Framework
 
 The test framework supports running HTTP requests against your domain (Fastly service) and is compatible with Fastly Fiddle Tests. This allows sync and copy-and-paste between automated tests and Fastly Fiddles. It requires separate installation of the [tepi](https://tepi.deno.dev/) test tool, which is [Deno](https://deno.land/) based.

@@ -80,12 +80,25 @@ GLOBAL OPTIONS
   Example: --api-token becomes EDGLY_API_TOKEN.
 ```
 
+### Get Fastly API Token
+
+Interacting with the Fastly APIs (mostly `edgly service` commands) requires your personal Fastly API token.
+
+1. [Retrieve your Fastly API token](https://docs.fastly.com/en/guides/using-api-tokens#creating-api-tokens)
+2. Set it as `EDGLY_API_TOKEN` environment variable in your shell/terminal:
+   ```
+   export EDGLY_API_TOKEN=<token>
+   ```
+
+Alternatively you can also set it as argument on certain commands using `-t/--api-token <token>`.
+
 ### Initial setup
 
 1. Create new service or use existing service from [Fastly](https://manage.fastly.com)
 2. Get the service id from the Fastly UI
-3. Inside a git repo (one repo per Fastly service recommended)
-4. Fetch the service configuration
+3. Open shell inside a git repo (one repo per Fastly service recommended)
+4. [Set your Fastly API token](#get-fastly-api-token) inside the shell (if not yet)
+5. Fetch the service configuration
    ```sh
    edgly service get --id <service-id>
    ```
@@ -98,11 +111,11 @@ GLOBAL OPTIONS
      ```sh
      edgly service get --id <service-id> -V 42
      ```
-5. Review for any secrets detected
-6. Commit the newly added files
+6. Review for any secrets detected
+7. Commit the newly added files
 
-7. This will store the `<service-id>` in `edgly.yaml` and assume this to be the `production` environment.
-8. Further updates (pulls) from the service can be done using just
+8. This will store the `<service-id>` in `edgly.yaml` and assume this to be the `production` environment.
+9. Further updates (pulls) from the service can be done using just
    ```sh
    edgly service get
    ```
@@ -121,12 +134,13 @@ Please note this simply creates another VCL service in Fastly with separate doma
      - stage.example.com
      - stage2.example.com
    ```
-2. Create stage service:
+2. [Set your Fastly API token](#get-fastly-api-token) inside the shell (if not yet)
+3. Create stage service:
    ```sh
    edgly service create --env stage
    ```
-3. By default this will name the stage service `<name> (stage)`. Use `--name <name>` to set a different name.
-3. This will store the new stage service id in `edgly.yaml`. Commit this file and the updated `domains.yaml`.
+4. By default this will name the stage service `<name> (stage)`. Use `--name <name>` to set a different name.
+5. This will store the new stage service id in `edgly.yaml`. Commit this file and the updated `domains.yaml`.
 
 ### Develop changes using Fiddles
 
@@ -148,20 +162,21 @@ Developing with [Fastly Fiddles](https://fiddle.fastly.dev) is helpful as it all
 
 ### Test changes in stage then deploy to production
 
-1. Deploy to stage:
+1. [Set your Fastly API token](#get-fastly-api-token) inside the shell (if not yet)
+2. Deploy to stage:
    ```sh
    edgly service update --env stage --activate
    ```
 3. Wait for Fastly changes to rollout, usually less than 30 seconds
-2. Run any tests against stage
+4. Run any tests against stage
    ```sh
    HOST=https://stage.example.com edgly test
    ```
-3. If successful, deploy to production:
+5. If successful, deploy to production:
    ```sh
    edgly service update --activate
    ```
-4. If something goes wrong, revert to old version using the Fastly UI
+6. If something goes wrong, revert to old version using the Fastly UI
 
 ## Test Framework
 

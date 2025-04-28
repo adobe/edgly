@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/adobe/edgly/compare/v1.3.2...v1.3.3) (2025-04-28)
+
+
+### Bug Fixes
+
+* **docs:** describe EDGLY_API_TOKEN ([#46](https://github.com/adobe/edgly/issues/46)) ([b2fa0ca](https://github.com/adobe/edgly/commit/b2fa0ca3e0ee9e66ab8bc9964861ae64842f9790))
+
 ## [1.3.2](https://github.com/adobe/edgly/compare/v1.3.1...v1.3.2) (2025-04-27)
 
 

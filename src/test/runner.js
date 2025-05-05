@@ -12,11 +12,11 @@
 
 import { execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
-import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { glob } from 'glob';
-import { isFiddleTest } from './parser.js';
+import { isFiddleTest, parseHttpTestFile, writeHttpTestFile } from './parser.js';
 
 const TEST_DIR = 'tests';
 
@@ -78,73 +78,74 @@ async function cmd(...command) {
 function rewriteTest(match, file, line) {
   const { label, target, comparison, value } = match.groups;
 
-  // clientFetch.status is 200
-  if (target === 'clientFetch.status' && comparison === 'is') {
-    // return `<% assertEquals(response.status, ${value}, '${label || 'Unexpected response status'}') %>`
-    return `HTTP/1.1 ${value}`;
-  }
-
-  /*
-  // can be enabled once https://github.com/jupegarnica/tepi/issues/2 is fixed
-
-  // clientFetch.status oneOf [200, 206]
-  if (target === 'clientFetch.status' && comparison === 'oneOf') {
-    return `<% assertArrayIncludes(${value}, [response.status], '${label || 'Unexpected response status'}') %>`;
-  }
-
-  // clientFetch.status isAbove 100
-  if (target === 'clientFetch.status' && comparison === 'isAbove') {
-    return `<% assert(response.status > ${value}, '${label || 'Unexpected response status'}') %>`;
-  }
-
-  // clientFetch.status isAtLeast 100
-  if (target === 'clientFetch.status' && comparison === 'isAtLeast') {
-    return `<% assert(response.status >= ${value}, '${label || 'Unexpected response status'}') %>`;
-  }
-
-  // clientFetch.status isBelow 100
-  if (target === 'clientFetch.status' && comparison === 'isBelow') {
-    return `<% assert(response.status < ${value}, '${label || 'Unexpected response status'}') %>`;
-  }
-
-  // clientFetch.status isAtMost 100
-  if (target === 'clientFetch.status' && comparison === 'isAtMost') {
-    return `<% assert(response.status <= ${value}, '${label || 'Unexpected response status'}') %>`;
-  }
-  */
-
-  // clientFetch.resp includes "Content-Type: image/webp"
-  if (target === 'clientFetch.resp' && comparison === 'includes') {
-    const m = value.match(/^"(.*:.*)"$/);
-    if (m) {
-      return m[1];
+  if (target === 'clientFetch.status') {
+    // clientFetch.status is 200
+    if (comparison === 'is') {
+      return `<% assertEquals(response.status, ${value}, '${label || 'Unexpected response status'}') %>`;
     }
-  }
 
-  // clientFetch.resp notIncludes "server: "
-  if (target === 'clientFetch.resp' && comparison === 'notIncludes') {
-    const m = value.match(/^"(.*):.*"$/);
-    if (m) {
-      const header = m[1];
-      return `<% assertFalse(response.headers.get('${header}'), '${label || `Unexpected response header: ${header}`}') %>`;
+    // clientFetch.status oneOf [200, 206]
+    if (comparison === 'oneOf') {
+      return `<% assertArrayIncludes(${value}, [response.status], '${label || 'Unexpected response status'}') %>`;
     }
-  }
 
-  // clientFetch.resp matches /fastly-io-info: .* odim=720x900 ofmt=webp/
-  if (target === 'clientFetch.resp' && comparison === 'matches') {
-    const m = value.match(/^\/(.+): (.*)\/$/);
-    if (m) {
-      const header = m[1];
-      // if pattern ends with newline, we have to transform this into $ for matching end of header value
-      // as below assertion only looks at the one header value and not the entire header stream
-      const pattern = m[2].replace(/\\n$/, '$');
-      return `<% assertMatch(response.headers.get('${header}'), /${pattern}/, '${label || `Unexpected pattern for response header: ${header}`}') %>`;
+    // clientFetch.status isAbove 100
+    if (comparison === 'isAbove') {
+      return `<% assert(response.status > ${value}, '${label || 'Unexpected response status'}') %>`;
     }
+
+    // clientFetch.status isAtLeast 100
+    if (comparison === 'isAtLeast') {
+      return `<% assert(response.status >= ${value}, '${label || 'Unexpected response status'}') %>`;
+    }
+
+    // clientFetch.status isBelow 100
+    if (comparison === 'isBelow') {
+      return `<% assert(response.status < ${value}, '${label || 'Unexpected response status'}') %>`;
+    }
+
+    // clientFetch.status isAtMost 100
+    if (comparison === 'isAtMost') {
+      return `<% assert(response.status <= ${value}, '${label || 'Unexpected response status'}') %>`;
+    }
+
+    throw new SourceFileError(`Unsupported operation for clientFetch.status: ${match.input}`, file, line);
   }
 
-  // clientFetch.resp notMatches /x-amz-[^: \n]*: /
-  if (target === 'clientFetch.resp' && comparison === 'notMatches') {
-    return `<% response.headers.forEach((v, k) => assertNotMatch(k + ": " + v, ${value}, '${label ? `${label}'` : "Unexpected response header: ' + k"})) %>`;
+  if (target === 'clientFetch.resp') {
+    // clientFetch.resp includes "Content-Type: image/webp"
+    if (comparison === 'includes') {
+      const m = value.match(/^"(.*:.*)"$/);
+      if (m) {
+        return m[1];
+      }
+    }
+
+    // clientFetch.resp notIncludes "server: "
+    if (comparison === 'notIncludes') {
+      const m = value.match(/^"(.*):.*"$/);
+      if (m) {
+        const header = m[1];
+        return `<% assertFalse(response.headers.get('${header}'), '${label || `Unexpected response header: ${header}`}') %>`;
+      }
+    }
+
+    // clientFetch.resp matches /fastly-io-info: .* odim=720x900 ofmt=webp/
+    if (comparison === 'matches') {
+      const m = value.match(/^\/(.+): (.*)\/$/);
+      if (m) {
+        const header = m[1];
+        // if pattern ends with newline, we have to transform this into $ for matching end of header value
+        // as below assertion only looks at the one header value and not the entire header stream
+        const pattern = m[2].replace(/\\n$/, '$');
+        return `<% assertMatch(response.headers.get('${header}'), /${pattern}/, '${label || `Unexpected pattern for response header: ${header}`}') %>`;
+      }
+    }
+
+    // clientFetch.resp notMatches /x-amz-[^: \n]*: /
+    if (comparison === 'notMatches') {
+      return `<% response.headers.forEach((v, k) => assertNotMatch(k + ": " + v, ${value}, '${label ? `${label}'` : "Unexpected response header: ' + k"})) %>`;
+    }
   }
 
   if (target === 'clientFetch.bodyPreview') {
@@ -182,45 +183,49 @@ function rewriteTest(match, file, line) {
 async function rewriteTestsInFile(baseDir, filePath) {
   console.debug('--------------------------------------------------------------------------------');
   console.debug(`Rewriting file: ${filePath}`);
+
   const tmpFile = path.join(baseDir, filePath);
-  const text = await readFile(tmpFile, 'utf8');
+  const { tests, meta } = parseHttpTestFile(tmpFile);
 
-  const lines = text.split('\n');
-  const newLines = [];
+  console.debug('✅ parsed tests:', { meta, tests });
 
-  let fiddleTestFound = false;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const match = isFiddleTest(line);
-    if (match) {
-      if (!fiddleTestFound) {
-        if (match.groups.target !== 'clientFetch.status' || match.groups.comparison !== 'is') {
-          throw new SourceFileError(
-            "First test MUST assert a specific response status: 'clientFetch.status is XXX'",
-            filePath,
-            i + 1,
-          );
+  for (const test of tests) {
+    const newAssertions = [];
+    const assertions = test.assertions.split('\n');
+    let httpLine = false;
+    for (const assertion of assertions) {
+      // ensure assertions start with a HTTP/* line (required by tepi)
+      if (!httpLine) {
+        if (assertion.startsWith('HTTP/')) {
+          newAssertions.push(assertion);
+        } else {
+          newAssertions.push('HTTP/1.1');
         }
-
-        // // above error can be replaced with this below once https://github.com/jupegarnica/tepi/issues/2 is fixed
-        // const statusLine = 'HTTP/1.1';
-        // newLines.push(statusLine);
-        // console.debug('✅', statusLine);
+        httpLine = true;
+        continue;
       }
-      fiddleTestFound = true;
 
-      const newLine = rewriteTest(match, filePath, i + 1);
-      console.debug('❌', line);
-      console.debug('✅', newLine);
-      newLines.push(newLine);
-    } else {
-      console.debug('  ', line);
-      newLines.push(line);
+      // rewrite any Fiddle assertions into tepi compatible expressions
+      const match = isFiddleTest(assertion);
+      if (match) {
+        newAssertions.push(rewriteTest(match, tmpFile));
+      } else {
+        newAssertions.push(assertion);
+      }
     }
+    test.assertions = newAssertions.join('\n');
+  }
+  writeHttpTestFile(tmpFile, tests, meta);
+
+  if (global.verbose) {
+    // log tmpFile contents
+    console.debug();
+    console.debug(`✅ file rewritten for tepi: ${tmpFile}`);
+    console.debug(await readFile(tmpFile, 'utf8'));
+    console.debug('✅ EOF');
   }
 
-  await writeFile(tmpFile, newLines.join('\n'));
+  return;
 }
 
 export async function runTests(globs, tepiArgs = []) {

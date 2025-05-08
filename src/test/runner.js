@@ -115,9 +115,11 @@ function rewriteTest(match, file, line) {
   if (target === 'clientFetch.resp') {
     // clientFetch.resp includes "Content-Type: image/webp"
     if (comparison === 'includes') {
-      const m = value.match(/^"(.*:.*)"$/);
+      const m = value.match(/^"(.+):\s+(.*)"$/);
       if (m) {
-        return m[1];
+        const header = m[1];
+        const headerValue = m[2];
+        return `<% assertEquals(response.headers.get('${header}'), '${headerValue}', '${label || `Unexpected response header: ${header}`}') %>`;
       }
     }
 

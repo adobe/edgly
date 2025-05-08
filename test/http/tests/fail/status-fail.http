@@ -19,6 +19,12 @@ GET /status/400
 HTTP/1.1 200
 
 ###
+# skip the HTTP/1.1 line
+GET /status/400
+
+clientFetch.status is 200
+
+###
 GET /status/400
 
 HTTP/1.1

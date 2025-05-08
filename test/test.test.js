@@ -70,6 +70,7 @@ function getTestSummary(output) {
 
 // turn off debug output (for all tests)
 console.debug = () => ({});
+// global.verbose = true;
 
 const TIMEOUT = 30000;
 
@@ -124,7 +125,7 @@ describe('test', () => {
         exit.restore();
       }
       assert.ok(exit.code !== 0, 'Unexpected zero exit code');
-      assert.equal(getTestSummary(stdout.toString()), 'FAIL  7 tests, 0 passed, 7 failed, 0 ignored');
+      assert.equal(getTestSummary(stdout.toString()), 'FAIL  8 tests, 0 passed, 8 failed, 0 ignored');
     } catch (e) {
       console.error(stdout.toString());
       console.error(stderr.toString());

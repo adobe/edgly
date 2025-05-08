@@ -12,10 +12,8 @@
 host: https://httpbin.org
 ---
 
-
 ###
 # reproduce https://github.com/jupegarnica/tepi/issues/2
-
 GET /status/200
 
 clientFetch.status is 200
@@ -24,4 +22,3 @@ clientFetch.status isAtLeast 200
 clientFetch.status isAtMost 200
 clientFetch.status isAbove 199
 clientFetch.status isBelow 201
-

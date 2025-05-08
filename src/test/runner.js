@@ -198,13 +198,12 @@ async function rewriteTestsInFile(baseDir, filePath) {
     for (const assertion of assertions) {
       // ensure assertions start with a HTTP/* line (required by tepi)
       if (!httpLine) {
+        httpLine = true;
         if (assertion.startsWith('HTTP/')) {
           newAssertions.push(assertion);
-        } else {
-          newAssertions.push('HTTP/1.1');
+          continue;
         }
-        httpLine = true;
-        continue;
+        newAssertions.push('HTTP/1.1');
       }
 
       // rewrite any Fiddle assertions into tepi compatible expressions

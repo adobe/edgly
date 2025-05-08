@@ -25,6 +25,7 @@ jobs:
       - run: npm run lint-ci
       - name: Install deno
         run: npm install -g deno
+      - run: echo "PATH=$PATH:$HOME/.deno/bin" >> $GITHUB_PATH
       - run: deno --version
       - name: Install tepi
         run: deno install --global --reload  --allow-read --allow-env --allow-net --allow-run -f -n tepi https://tepi.deno.dev/src/cli.ts

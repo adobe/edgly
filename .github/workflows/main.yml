@@ -27,7 +27,7 @@ jobs:
         run: npm install -g deno
       - run: deno --version
       - name: Install tepi
-        run: deno install --reload  --allow-read --allow-env --allow-net --allow-run -f -n tepi https://tepi.deno.dev/src/cli.ts
+        run: deno install --global --reload  --allow-read --allow-env --allow-net --allow-run -f -n tepi https://tepi.deno.dev/src/cli.ts
       - run: tepi --version
       - run: npm test
       - uses: codecov/codecov-action@v5

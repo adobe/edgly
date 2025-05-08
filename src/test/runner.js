@@ -268,10 +268,11 @@ export async function runTests(globs, tepiArgs = []) {
     if (exitCode !== 0) {
       // lazily (= only after failed tests) check for required tepi version
       try {
-        const version = spawnSync('tepiX', ['--version'], { cwd: tempDir }).stdout.toString().trim();
+        const version = spawnSync('tepi', ['--version'], { cwd: tempDir }).stdout.toString().trim();
         // check if tepi version is >= 1.1.4 for fix of https://github.com/jupegarnica/tepi/issues/2
         const [major, minor, patch] = version.split('.').map(Number);
         if (major < 1 || (major === 1 && minor < 1) || (major === 1 && minor === 1 && patch < 4)) {
+          console.warn();
           console.warn(`Tests might be failing because tepi ${version} is installed but 1.1.4 or newer is required.`);
           console.warn('Please upgrade tepi: https://github.com/jupegarnica/tepi');
         }

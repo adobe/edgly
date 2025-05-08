@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: deno --version
+      - run: tepi --version
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:

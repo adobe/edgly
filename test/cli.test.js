@@ -13,7 +13,7 @@
 import assert from 'node:assert/strict';
 import { exec } from 'node:child_process';
 
-describe('index', () => {
+describe('cli', () => {
   it('edgly -h', (done) => {
     exec('node src/index.js -h', (err, stdout, _stderr) => {
       assert.ok(!err, err?.message);

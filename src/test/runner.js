@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { execSync, spawn } from 'node:child_process';
+import { execSync, spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { cp, mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -265,6 +265,22 @@ export async function runTests(globs, tepiArgs = []) {
 
     // (3) run tepi on the rewritten files in the temp directory
     const exitCode = await cmd('tepi', ...tepiArgs, '--no-animation', ...globs, { cwd: tempDir });
+
+    if (exitCode !== 0) {
+      // lazily (= only after failed tests) check for required tepi version
+      try {
+        const version = spawnSync('tepiX', ['--version'], { cwd: tempDir }).stdout.toString().trim();
+        // check if tepi version is >= 1.1.4 for fix of https://github.com/jupegarnica/tepi/issues/2
+        const [major, minor, patch] = version.split('.').map(Number);
+        if (major < 1 || (major === 1 && minor < 1) || (major === 1 && minor === 1 && patch < 4)) {
+          console.warn(`Tests might be failing because tepi ${version} is installed but 1.1.4 or newer is required.`);
+          console.warn('Please upgrade tepi: https://github.com/jupegarnica/tepi');
+        }
+      } catch (_e) {
+        // ignore - this is meant just as a hint to the user, so it's fine if it fails
+      }
+    }
+
     // pass along the tepi exit code
     process.exit(exitCode);
   } catch (e) {

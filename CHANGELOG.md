@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/adobe/edgly/compare/v1.3.3...v1.3.4) (2025-05-08)
+
+
+### Bug Fixes
+
+* **test:** support more status code checks [#43](https://github.com/adobe/edgly/issues/43) ([#50](https://github.com/adobe/edgly/issues/50)) ([3ab8ea9](https://github.com/adobe/edgly/commit/3ab8ea96fe04e4dadcdeeae2987b83670a3348f4))
+
 ## [1.3.3](https://github.com/adobe/edgly/compare/v1.3.2...v1.3.3) (2025-04-28)
 
 

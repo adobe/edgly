@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/adobe/edgly/compare/v1.3.4...v1.3.5) (2025-05-08)
+
+
+### Bug Fixes
+
+* **test:** fix tepi version check ([14ac3cb](https://github.com/adobe/edgly/commit/14ac3cbbe8e6ff52404250f1f4fcd768300d874c))
+
 ## [1.3.4](https://github.com/adobe/edgly/compare/v1.3.3...v1.3.4) (2025-05-08)
 
 

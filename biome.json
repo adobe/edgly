@@ -40,7 +40,7 @@
     {
       "include": ["test/**/*.js"],
       "javascript": {
-        "globals": ["describe", "it"]
+        "globals": ["afterEach", "afterAll", "beforeEach", "beforeAll", "describe", "it"]
       },
       "linter": {
         "rules": {

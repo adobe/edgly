@@ -1,7 +1,7 @@
 {
   "license": "HEADER",
   "trailingWhitespace": "TRIM",
-  "regexIdentifier": "##",
+  "regexIdentifier": "~~",
   "ignoreFile": ".gitignore",
   "ignore": [
     "HEADER",
@@ -14,7 +14,8 @@
     "*.svg"
   ],
   "licenseFormats": {
-    "js": { "prepend": "/*", "append": " */", "eachLine": { "prepend": " * " } }
+    "js": { "prepend": "/*", "append": " */", "eachLine": { "prepend": " * " } },
+    "http": { "eachLine": { "prepend": "# " } }
   },
   "defaultFormat": {
     "prepend": "/*", "append": " */", "eachLine": { "prepend": " * " }

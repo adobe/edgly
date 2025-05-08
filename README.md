@@ -211,6 +211,8 @@ The test framework supports running HTTP requests against your domain (Fastly se
 
 ### Install tepi
 
+Note that at least tepi version `1.1.4` is required (as of `edgly` version `1.3.4`).
+
 Test execution requires installation of [tepi](https://tepi.deno.dev/):
 1. Install [deno](https://deno.land/)
 2. Install [tepi](https://tepi.deno.dev/)
@@ -221,7 +223,7 @@ Test execution requires installation of [tepi](https://tepi.deno.dev/):
 
 ### Test case syntax
 
-1. Tests are defined in `*.http` files in the [tests](tests/) folder
+1. Tests are defined in `*.http` files in a `tests` folder (non configurable)
 2. Each file can have multiple tests
 3. Test format is the [tepi](https://tepi.deno.dev/) one, but supporting [Fastly Fiddle Tests](https://www.fastly.com/documentation/reference/tools/fiddle/testing/) in the response assertions
 4. Supported Fiddle test assertions are documented in [TESTS.md](TESTS.md)

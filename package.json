@@ -18,7 +18,7 @@
     "semantic-release-dry": "semantic-release --dry-run --branches $CI_BRANCH"
   },
   "dependencies": {
-    "@adobe/fetch": "4.2.0",
+    "@adobe/fetch": "4.2.1",
     "chalk": "5.4.1",
     "formdata-node": "6.0.3",
     "glob": "11.0.2",
@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@commitlint/cli": "19.8.0",
-    "@commitlint/config-conventional": "19.8.0",
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "19.8.1",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "@semantic-release/npm": "12.0.1",

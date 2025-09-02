@@ -1,3 +1,10 @@
+## [1.3.7](https://github.com/adobe/edgly/compare/v1.3.6...v1.3.7) (2025-09-02)
+
+
+### Bug Fixes
+
+* **deps:** update external fixes ([029d189](https://github.com/adobe/edgly/commit/029d18904e0684f9e86f7f5fdc574bd1ae05388c))
+
 ## [1.3.6](https://github.com/adobe/edgly/compare/v1.3.5...v1.3.6) (2025-05-11)
 
 

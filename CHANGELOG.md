@@ -1,3 +1,10 @@
+## [1.3.10](https://github.com/adobe/edgly/compare/v1.3.9...v1.3.10) (2025-11-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency glob to v11.1.0 [security] ([#61](https://github.com/adobe/edgly/issues/61)) ([d291e61](https://github.com/adobe/edgly/commit/d291e6174c87c00f6fd3d17411444269df09e7ca))
+
 ## [1.3.9](https://github.com/adobe/edgly/compare/v1.3.8...v1.3.9) (2025-09-21)
 
 

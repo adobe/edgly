@@ -23,7 +23,7 @@
     "formdata-node": "6.0.3",
     "glob": "11.1.0",
     "tiny-update-notifier": "2.0.2",
-    "yaml": "2.8.1",
+    "yaml": "2.8.2",
     "yargs": "17.7.2"
   },
   "devDependencies": {

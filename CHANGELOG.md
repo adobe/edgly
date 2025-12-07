@@ -1,3 +1,10 @@
+## [1.3.11](https://github.com/adobe/edgly/compare/v1.3.10...v1.3.11) (2025-12-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency yaml to v2.8.2 ([#62](https://github.com/adobe/edgly/issues/62)) ([2c9718b](https://github.com/adobe/edgly/commit/2c9718b3c168f56b733865a9681bdf674c2ba2cc))
+
 ## [1.3.10](https://github.com/adobe/edgly/compare/v1.3.9...v1.3.10) (2025-11-19)
 
 

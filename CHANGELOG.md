@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/adobe/edgly/compare/v1.4.0...v1.4.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency yaml to v2.8.3 [security] ([14ddc66](https://github.com/adobe/edgly/commit/14ddc66595b4640126f34a39ef90395ffb5ea9f9))
+
 # [1.4.0](https://github.com/adobe/edgly/compare/v1.3.11...v1.4.0) (2026-04-29)
 
 

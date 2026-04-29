@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { LOG_SECRET_FIELDS, detectSecrets } from '../src/secrets/secrets.js';
+import { detectSecrets, LOG_SECRET_FIELDS } from '../src/secrets/secrets.js';
 
 // silence debug/warn output for these tests
 console.debug = () => ({});

@@ -1,23 +1,25 @@
 {
+  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
   "files": {
-    "ignore": ["renovate.json"]
+    "includes": ["**", "!**/renovate.json"]
   },
   "linter": {
     "rules": {
-      "all": true,
+      "recommended": true,
       "correctness": {
         "noUndeclaredVariables": "error",
         "noNodejsModules": "off"
       },
       "suspicious": {
         "noConsole": "off",
-        "noConsoleLog": "off"
+        "noTemplateCurlyInString": "off"
       },
       "performance": {
         "useTopLevelRegex": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": {
+          "level": "error",
           "options": {
             "maxAllowedComplexity": 20
           }
@@ -26,7 +28,7 @@
     }
   },
   "formatter": {
-    "ignore": ["package.json", "license-checker-config.json"],
+    "includes": ["**", "!**/package.json", "!**/license-checker-config.json"],
     "indentStyle": "space",
     "lineWidth": 120
   },
@@ -38,7 +40,7 @@
   },
   "overrides": [
     {
-      "include": ["test/**/*.js"],
+      "includes": ["**/test/**/*.js"],
       "javascript": {
         "globals": ["afterEach", "afterAll", "beforeEach", "beforeAll", "describe", "it"]
       },
@@ -51,7 +53,7 @@
       }
     },
     {
-      "include": ["src/commands/*.js"],
+      "includes": ["**/src/commands/**/*.js"],
       "linter": {
         "rules": {
           "style": {
@@ -61,7 +63,7 @@
       }
     },
     {
-      "include": ["src/fastly/service.js"],
+      "includes": ["**/src/fastly/service.js"],
       "linter": {
         "rules": {
           "style": {

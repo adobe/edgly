@@ -331,7 +331,6 @@ function writeDictionaries(dictionaries) {
 }
 
 function readDictionary(dictPath) {
-  // biome-ignore lint/style/useNamingConvention: fastly json naming
   let write_only = false;
   let filename = path.basename(dictPath, '.ini');
   if (filename.startsWith(PRIVATE_DICT_PREFIX)) {
@@ -355,9 +354,7 @@ function readDictionary(dictPath) {
       const keyValueMatch = line.match(/([^=]+)="(.*)"/);
       if (keyValueMatch) {
         dict.items.push({
-          // biome-ignore lint/style/useNamingConvention: fastly json naming
           item_key: keyValueMatch[1],
-          // biome-ignore lint/style/useNamingConvention: fastly json naming
           item_value: keyValueMatch[2],
         });
       }

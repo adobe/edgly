@@ -133,7 +133,7 @@ function findSecretsInString(input) {
   matches.push(...findKnownSecretPatterns(input));
 
   // 2. find high entropy strings. need to split into "words" first
-  for (const word of input.split(/[\s:\/\.,&#'"=;]+/)) {
+  for (const word of input.split(/[\s:/.,&#'"=;]+/)) {
     // if (matches.length === 0) {
     const match = findHighEntropy(word, cfg?.entropy_threshold);
     if (match) {

@@ -279,7 +279,6 @@ export class FastlyApi {
       // create dict
       const body = toFormData({
         name: dictName,
-        // biome-ignore lint/style/useNamingConvention: fastly json naming
         write_only: String(writeOnly),
       });
       resp = await this.fetch(`POST /service/${serviceId}/version/${versionId}/dictionary`, { body });
@@ -289,7 +288,6 @@ export class FastlyApi {
     }
     const { id } = await resp.json();
 
-    // biome-ignore lint/style/useNamingConvention: fastly json naming
     const items = Object.entries(entries).map(([key, value]) => ({ op: 'upsert', item_key: key, item_value: value }));
 
     while (items.length > 0) {

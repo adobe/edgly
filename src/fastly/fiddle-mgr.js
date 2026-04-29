@@ -106,14 +106,13 @@ function tablesToDictionaries(init, service, opts) {
 
   const dicts = [];
 
-  const tablesRegex = /table (\w+) \{[^\}]*\}/gm;
+  const tablesRegex = /table (\w+) \{[^}]*\}/gm;
   const entriesRegex = /^\s*"([^"]*)"\s*:\s*"([^"]*)"\s*,.*$/gm;
 
   for (const table of init.matchAll(tablesRegex)) {
     const name = table[1];
     const dict = {
       name,
-      // biome-ignore lint/style/useNamingConvention: fastly json schema
       write_only: currentDicts[name]?.write_only,
       items: [],
       info: {},
@@ -128,9 +127,7 @@ function tablesToDictionaries(init, service, opts) {
     const entries = table[0].matchAll(entriesRegex);
     for (const entry of entries) {
       dict.items.push({
-        // biome-ignore lint/style/useNamingConvention: fastly json schema
         item_key: entry[1],
-        // biome-ignore lint/style/useNamingConvention: fastly json schema
         item_value: entry[2],
       });
     }
@@ -188,12 +185,9 @@ function fiddleOriginsToBackends(fiddle, service) {
         name,
         address: origin.hostname,
         hostname: origin.hostname,
-        port: origin.port === '' ? (origin.protocol === 'https:' ? 443 : 80) : Number.parseInt(origin.port),
-        // biome-ignore lint/style/useNamingConvention: fastly json schema
+        port: origin.port === '' ? (origin.protocol === 'https:' ? 443 : 80) : Number.parseInt(origin.port, 10),
         use_ssl: origin.protocol === 'https:',
-        // biome-ignore lint/style/useNamingConvention: fastly json schema
         ssl_cert_hostname: origin.protocol === 'https:' ? origin.hostname : null,
-        // biome-ignore lint/style/useNamingConvention: fastly json schema
         ssl_sni_hostname: origin.protocol === 'https:' ? origin.hostname : null,
       });
     }

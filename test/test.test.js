@@ -19,7 +19,7 @@ class StreamCatcher {
     this.streamWrite = stream._write;
 
     this.buffer = Buffer.alloc(0);
-    // biome-ignore lint/complexity/noUselessThisAlias: <explanation>
+    // biome-ignore lint/complexity/noUselessThisAlias: needed for arrow function closure below
     const self = this;
 
     stream._write = (chunk, encoding, callback) => {
@@ -50,7 +50,7 @@ class StreamCatcher {
 class ExitCatcher {
   constructor() {
     this.processExit = process.exit;
-    // biome-ignore lint/complexity/noUselessThisAlias: <explanation>
+    // biome-ignore lint/complexity/noUselessThisAlias: needed for arrow function closure below
     const self = this;
     process.exit = (code) => {
       self.code = code;

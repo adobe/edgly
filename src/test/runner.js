@@ -244,7 +244,6 @@ export async function runTests(globs, tepiArgs = []) {
   }
 
   // if absolute path is used (eg. by tepi VS Code extension), make it relative
-  // biome-ignore lint/style/noParameterAssign: it's easier this way :)
   globs = globs.map((g) => removePrefix(g, `${process.cwd()}/`));
 
   try {

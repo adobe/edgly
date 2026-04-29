@@ -25,7 +25,6 @@ function isFile(path) {
   } catch (err) {
     if (err.code === 'ENOENT') {
       return false; // File doesn't exist
-      // biome-ignore lint/style/noUselessElse: mistakenly flagged
     } else {
       throw err; // Other errors
     }
@@ -38,7 +37,6 @@ function isDirectory(path) {
   } catch (err) {
     if (err.code === 'ENOENT') {
       return false; // Directory doesn't exist
-      // biome-ignore lint/style/noUselessElse: mistakenly flagged
     } else {
       throw err; // Other errors
     }
@@ -97,7 +95,6 @@ function onFail(msg, err, yargs) {
   } else {
     // yargs validation errors (only message, no err)
     for (const [newMsg, oldMsg] of Object.entries(BETTER_FAIL_MESSAGES)) {
-      // biome-ignore lint/style/noParameterAssign: it's easier this way :)
       msg = msg.replace(oldMsg, newMsg);
     }
 
@@ -155,7 +152,6 @@ function handleAdditionalTypes(_yargs, opt) {
  *   - exit with code 2 on application errors
  * - TODO: document other stuff
  */
-// biome-ignore lint/style/noDefaultExport: we mimic yargs here
 export default function yargsAhoy(processArgs, cwd, parentRequire) {
   const yargs = _yargs(processArgs, cwd, parentRequire);
 

@@ -14,7 +14,7 @@ import { execSync } from 'node:child_process';
 import chalk from 'chalk';
 import { FastlyServiceManager } from '../../fastly/service-mgr.js';
 import { readService } from '../../fastly/store.js';
-import { SHARED_OPTS, override } from '../../opts.js';
+import { override, SHARED_OPTS } from '../../opts.js';
 
 function getLastGitCommit() {
   try {

@@ -5,7 +5,7 @@
     ":semanticCommits",
     ":pinDependencies"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "main"
   ],
   "timezone": "America/Los_Angeles",

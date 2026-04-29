@@ -22,37 +22,46 @@ const SECRETS_FILE = '.secrets.env';
 
 export const LOG_SECRET_FIELDS = {
   bigqueries: 'secret_key',
-  // 'cloudfiles',
-  // 'datadog',
-  // 'digitalocean',
-  // 'elasticsearch',
-  // 'ftp',
-  // 'gcs',
-  // 'pubsub',
-  // 'grafanacloudlogs',
+  cloudfiles: 'access_key',
+  datadog: 'token',
+  digitalocean: 'secret_key',
+  elasticsearch: ['password', 'tls_client_key'],
+  ftp: 'password',
+  gcs: 'secret_key',
+  pubsub: 'secret_key',
+  grafanacloudlogs: 'token',
   https: 'header_value',
-  // 'heroku',
-  // 'honeycomb',
-  // 'kafka',
-  // 'kinesis',
-  // 'logshuttle',
-  // 'loggly',
-  // 'azureblob',
+  heroku: 'token',
+  honeycomb: 'token',
+  kafka: ['password', 'tls_client_key'],
+  kinesis: 'secret_key',
+  logshuttle: 'token',
+  loggly: 'token',
+  azureblob: 'sas_token',
   newrelics: 'token',
-  // 'newrelicotlp',
-  // 'openstack',
-  // 'papertrail',
-  // 's3',
-  // 'sftp',
-  // 'scalyr',
+  newrelicotlp: 'token',
+  openstack: 'access_key',
+  // papertrail: no credential field — auth is by source IP/hostname
+  s3: 'secret_key',
+  sftp: ['secret_key', 'password'],
+  scalyr: 'token',
   splunks: 'token',
-  // 'sumologic',
-  // 'syslog',
+  sumologic: 'url',
+  syslog: 'tls_client_key',
 };
 
 function truncate(str, n) {
   const re = new RegExp(`(.{${n}})..+`);
   return str.replace(re, '$1…');
+}
+
+// Escape a value for a double-quoted .env entry. dotenv only unescapes \n and
+// \r inside double quotes (not \" or \\), so we keep escaping minimal: \n / \r
+// for multi-line PEM values, and \" so a stray quote doesn't truncate the line.
+// Bare backslashes are passed through as-is — round-tripping a literal "\n" in
+// a value is not supported (Fastly secrets don't contain that text).
+function escapeEnvValue(value) {
+  return value.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/"/g, '\\"');
 }
 
 function shannonEntropy(input) {
@@ -238,26 +247,27 @@ function detectSecretsInLogFields(service, mode) {
   const secrets = [];
 
   for (const logType of Object.keys(LOG_SECRET_FIELDS)) {
-    const secretField = LOG_SECRET_FIELDS[logType];
-    if (Array.isArray(service[logType])) {
-      for (const logConfig of service[logType]) {
-        if (logConfig[secretField]) {
-          // ignore if already a variable
-          if (isVariableExpression(logConfig[secretField])) {
-            continue;
-          }
+    const fields = LOG_SECRET_FIELDS[logType];
+    const fieldList = Array.isArray(fields) ? fields : [fields];
+    if (!Array.isArray(service[logType])) {
+      continue;
+    }
+    for (const logConfig of service[logType]) {
+      for (const field of fieldList) {
+        const value = logConfig[field];
+        if (!value || isVariableExpression(value)) {
+          continue;
+        }
+        const secret = {
+          name: `Log ${logType}.${field}`,
+          value,
+          type: 'Log secret field',
+          var: `LOG_${logType.toUpperCase()}_${field.toUpperCase()}`,
+        };
+        secrets.push(secret);
 
-          const secret = {
-            name: `Log ${logType}.${secretField}`,
-            value: logConfig[secretField],
-            type: 'Log secret field',
-            var: `LOG_${logType.toUpperCase()}_${secretField.toUpperCase()}`,
-          };
-          secrets.push(secret);
-
-          if (mode === 'replace') {
-            logConfig[secretField] = getVariableExpression(secret.var);
-          }
+        if (mode === 'replace') {
+          logConfig[field] = getVariableExpression(secret.var);
         }
       }
     }
@@ -286,7 +296,7 @@ export function detectSecrets(service, mode) {
         console.warn(`- ${secret.var} = ${truncate(secret.value, 40)} (${secret.type})`);
       }
 
-      fs.writeFileSync(SECRETS_FILE, secrets.map((s) => `${s.var}="${s.value}"`).join('\n'));
+      fs.writeFileSync(SECRETS_FILE, `${secrets.map((s) => `${s.var}="${escapeEnvValue(s.value)}"`).join('\n')}\n`);
     } else {
       console.warn(`\nWarning: Found ${secrets.length} potential secrets:`);
       for (const secret of secrets) {

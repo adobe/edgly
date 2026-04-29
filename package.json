@@ -18,7 +18,7 @@
     "semantic-release-dry": "semantic-release --dry-run --branches $CI_BRANCH"
   },
   "dependencies": {
-    "@adobe/fetch": "4.2.3",
+    "@adobe/fetch": "4.3.0",
     "chalk": "5.6.2",
     "formdata-node": "6.0.3",
     "glob": "11.1.0",

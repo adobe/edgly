@@ -28,7 +28,8 @@ jobs:
       - run: echo "PATH=$PATH:$HOME/.deno/bin" >> $GITHUB_PATH
       - run: deno --version
       - name: Install tepi
-        run: deno install --global --reload  --allow-read --allow-env --allow-net --allow-run -f -n tepi https://tepi.deno.dev/src/cli.ts
+        # Pinned to v1.1.4 because newer versions up to 2.0.5 had various dependency issues
+        run: deno install --global --reload --allow-read --allow-env --allow-net --allow-run -f -n tepi https://deno.land/x/tepi@v1.1.4/src/cli.ts
       - run: tepi --version
       - run: npm test
       - uses: codecov/codecov-action@v5

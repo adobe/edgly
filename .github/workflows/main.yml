@@ -15,11 +15,11 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '22.x'
+          node-version: '24.x'
       - run: npm ci
       - run: npm run license-check
       - run: npm run lint-ci
@@ -32,7 +32,7 @@ jobs:
         run: deno install --global --reload --allow-read --allow-env --allow-net --allow-run -f -n tepi https://deno.land/x/tepi@v1.1.4/src/cli.ts
       - run: tepi --version
       - run: npm test
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
       - run: npx @adobe/sizewatcher
@@ -50,13 +50,13 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '22.x'
+          node-version: '24.x'
       - run: npm ci
       - run: npm run semantic-release
         env:

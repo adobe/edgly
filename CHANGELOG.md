@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/adobe/edgly/compare/v1.4.1...v1.4.2) (2026-04-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/fetch to v4.3.0 ([0689780](https://github.com/adobe/edgly/commit/0689780e80638fa6ab5d4c27db500d516ce5b5a4))
+
 ## [1.4.1](https://github.com/adobe/edgly/compare/v1.4.0...v1.4.1) (2026-04-29)
 
 

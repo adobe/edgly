@@ -23,13 +23,13 @@
     "formdata-node": "6.0.3",
     "glob": "13.0.6",
     "tiny-update-notifier": "2.0.2",
-    "yaml": "2.8.3",
+    "yaml": "2.8.4",
     "yargs": "18.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.13",
-    "@commitlint/cli": "20.5.2",
-    "@commitlint/config-conventional": "20.5.0",
+    "@biomejs/biome": "2.4.14",
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-conventional": "20.5.3",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "@semantic-release/npm": "13.1.5",

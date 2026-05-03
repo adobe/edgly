@@ -1,3 +1,10 @@
+## [1.4.4](https://github.com/adobe/edgly/compare/v1.4.3...v1.4.4) (2026-05-03)
+
+
+### Bug Fixes
+
+* **deps:** update external fixes ([#69](https://github.com/adobe/edgly/issues/69)) ([13fdfc3](https://github.com/adobe/edgly/commit/13fdfc343d0dc7bc228680de0fcadfe1024885c3))
+
 ## [1.4.3](https://github.com/adobe/edgly/compare/v1.4.2...v1.4.3) (2026-04-29)
 
 

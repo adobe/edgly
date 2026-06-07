@@ -32,7 +32,7 @@ jobs:
         run: deno install --global --reload --allow-read --allow-env --allow-net --allow-run -f -n tepi https://deno.land/x/tepi@v1.1.4/src/cli.ts
       - run: tepi --version
       - run: npm test
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
       - run: npx @adobe/sizewatcher
